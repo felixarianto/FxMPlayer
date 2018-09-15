@@ -22,17 +22,18 @@ public class DB extends SQLiteOpenHelper implements DatabaseErrorHandler {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE FILE(" +
-                "_id INTEGER PRIMARY KEY," +
-                "path text NOT NULL," +
-                "last_update text NOT NULL" +
+                "_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                "path TEXT NOT NULL," +
+                "last_update TEXT NOT NULL" +
                 ")");
 
         db.execSQL("CREATE TABLE FILE_TRACK(" +
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                "title text NOT NULL," +
-                "title text NOT NULL," +
-                "sc_time text NOT NULL," +
-                "ec_time text NOT NULL" +
+                "file_id INTEGER NOT NULL," +
+                "title TEXT NOT NULL," +
+                "sq_no INTEGER NOT NULL," +
+                "sc_time TEXT NOT NULL," +
+                "ec_time TEXT NOT NULL" +
                 ")");
     }
 
@@ -76,6 +77,10 @@ public class DB extends SQLiteOpenHelper implements DatabaseErrorHandler {
 
     public static Cursor query(String p_table, String[] p_columns, String p_where, String p_group, String p_order, String p_limit) {
         return db.getReadableDatabase().query(p_table, p_columns, p_where, null, null, null, p_order, p_limit);
+    }
+
+    public static Cursor query(String p_query) {
+        return db.getReadableDatabase().rawQuery(p_query, null);
     }
 
 }
