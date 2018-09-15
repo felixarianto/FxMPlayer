@@ -9,14 +9,13 @@ public class Util {
         try {
             hours = (duration / 3600000);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return out;
         }
         long remaining_minutes = (duration - (hours * 3600000)) / 60000;
         String minutes = twoDigit(remaining_minutes);
 
-        long remaining_seconds = (duration - (hours * 3600000) - (remaining_minutes * 60000));
+        long remaining_seconds = (duration - (hours * 3600000) - (remaining_minutes * 60000)) / 1000;
         String seconds = twoDigit(remaining_seconds);
 
         if (hours > 0) {

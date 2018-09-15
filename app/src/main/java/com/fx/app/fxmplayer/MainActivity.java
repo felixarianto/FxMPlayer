@@ -157,6 +157,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }.start();
     }
 
+    private void refreshTracks() {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+
+                    mAdapterTrack.DATA.clear();
+                    Cursor cr = DB.query("select _id, title, sc_time, ec_time from FILE_TRACK order by sq_no desc limit 1");
+                    while (cr.moveToNext()) {
+                        }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
+
     private Adapter mAdapterTrack;
 
 
@@ -272,9 +291,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void addTrack(final String p_title, final String p_start, final String p_end) {
-        new AsyncTask<String, String, String>() {
+        new AsyncTask<String, String, Object[]>() {
             @Override
-            protected String doInBackground(String... strings) {
+            protected Object[] doInBackground(String... strings) {
 
                 int sq_no = 1;
                 Cursor cursor = DB.query("select sq_no from FILE_TRACK where file_id=" + mFileId + " order by sq_no desc limit 1");
@@ -282,20 +301,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     sq_no = cursor.getInt(0) + 1;
                 }
 
+                int sc=0, ec=0;
+
                 ContentValues cvalues = new ContentValues();
                 cvalues.put("file_id", mFileId);
                 cvalues.put("title", p_title);
                 cvalues.put("sq_no", sq_no);
-                cvalues.put("sc_time", Util.fromDisplay(p_start));
-                cvalues.put("ec_time", Util.fromDisplay(p_end));
-                DB.insert("FILE_TRACK", cvalues);
+                cvalues.put("sc_time", sc = Util.fromDisplay(p_start));
+                cvalues.put("ec_time", ec = Util.fromDisplay(p_end));
+                long id = DB.insert("FILE_TRACK", cvalues);
 
-                return null;
+                return new Object[]{Long.valueOf(id).intValue(), p_title, sc, ec};
             }
 
             @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
+            protected void onPostExecute(Object[] r) {
+                mAdapterTrack.DATA.add(r);
+                mAdapterTrack.notifyItemInserted(mAdapterTrack.DATA.size() - 1);
             }
         }.execute();
 
