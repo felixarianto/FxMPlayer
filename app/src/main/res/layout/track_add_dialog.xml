@@ -53,7 +53,8 @@
             android:background="@drawable/selector_edit_text"
             android:hint="Title..."
             android:padding="8dp"
-            android:layout_margin="16dp"/>
+            android:layout_margin="16dp"
+            android:maxLength="20"/>
 
         <EditText
             android:id="@+id/edtx_start"
@@ -68,7 +69,8 @@
             android:textSize="28sp"
             android:gravity="center"
             android:textColor="@color/colorPrimaryDark"
-            android:enabled="false"/>
+            android:enabled="false"
+            android:maxLength="5"/>
 
         <EditText
             android:id="@+id/edtx_end"
@@ -83,7 +85,8 @@
             android:textSize="28sp"
             android:gravity="center"
             android:textColor="@color/colorPrimaryDark"
-            android:enabled="false"/>
+            android:enabled="false"
+            android:maxLength="5"/>
 
         <TextView
             android:layout_width="match_parent"

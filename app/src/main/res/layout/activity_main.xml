@@ -121,12 +121,11 @@
                     android:layout_width="10dp"
                     android:layout_height="10dp"
                     android:background="@drawable/circle_accent"
-                    android:layout_marginLeft="200dp"
                     android:layout_centerVertical="true"/>
 
                 <View
                     android:id="@+id/seek_line"
-                    android:layout_width="100dp"
+                    android:layout_width="0dp"
                     android:layout_height="2dp"
                     android:background="@color/colorAccent"
                     android:layout_alignLeft="@+id/seek_pos_sc"
@@ -153,7 +152,6 @@
                 android:textSize="16sp"
                 android:textColor="@color/colorAccent"
                 android:text="00:00"/>
-
 
             <ImageButton
                 android:id="@+id/btn_play_pause"

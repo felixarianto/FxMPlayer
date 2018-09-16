@@ -9,9 +9,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00:00 - 25:00"
-        android:textSize="16sp"
-        android:textColor="@color/colorPrimary"
+        android:textSize="18sp"
+        android:textColor="@color/selector_adapter_color"
         android:layout_alignParentRight="true"
+        android:enabled="false"
+        android:layout_centerVertical="true"
         />
 
     <TextView
@@ -19,10 +21,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Reff 1"
-        android:textSize="16sp"
-        android:textColor="@color/colorPrimary"
+        android:textSize="18sp"
+        android:textColor="@color/selector_adapter_color"
         android:layout_toLeftOf="@+id/time"
         android:paddingRight="16dp"
+        android:enabled="false"
+        android:layout_centerVertical="true"
         />
 
 </RelativeLayout>
