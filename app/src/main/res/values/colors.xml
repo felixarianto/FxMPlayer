@@ -6,5 +6,7 @@
     <color name="colorAccent">#02CCDB</color>
     <color name="colorPrimaryDarkLight">#838586</color>
 
+    <color name="black_overlay">#66000000</color>
+
 
 </resources>

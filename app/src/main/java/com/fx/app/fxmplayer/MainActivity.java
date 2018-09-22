@@ -1,16 +1,27 @@
 package com.fx.app.fxmplayer;
 
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.ClipData;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +29,12 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseBooleanArray;
+import android.util.TypedValue;
+import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -28,6 +44,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fx.app.sqlite.DB;
 
@@ -43,16 +60,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        /*
+         *
+         *
+         */
         rcvw_track = findViewById(R.id.rcvw_track);
         rcvw_track.setAdapter(mAdapterTrack = new Adapter());
 
         DividerItemDecoration divider = new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
         divider.setDrawable(getResources().getDrawable(R.drawable.divider_list));
         rcvw_track.addItemDecoration(divider);
+        rcvw_track_layout_manager = (LinearLayoutManager) rcvw_track.getLayoutManager();
 
         btn_add = findViewById(R.id.btn_add);
         btn_add.setOnClickListener(this);
+
+        btn_del = findViewById(R.id.btn_del);
+        btn_del.setOnClickListener(this);
+
+        lnly_menu       = findViewById(R.id.lnly_menu);
+        lnly_menu_confirm = findViewById(R.id.lnly_menu_confirm);
+        btn_menu_ok     = findViewById(R.id.btn_menu_ok);
+        btn_menu_cancel = findViewById(R.id.btn_menu_cancel);
+        btn_menu_cancel.setOnClickListener(this);
+        /*
+         *
+         *
+         */
         txt_title = findViewById(R.id.txt_title);
         btn_play_pause = findViewById(R.id.btn_play_pause);
         btn_play_pause.setOnClickListener(this);
@@ -61,9 +95,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         seek_line = findViewById(R.id.seek_line);
         seek_start = findViewById(R.id.seek_start);
         seek_end   = findViewById(R.id.seek_end);
+        track_selected = findViewById(R.id.track_selected);
 
         seek_pos_sc = findViewById(R.id.seek_pos_sc);
         seek_pos_ec = findViewById(R.id.seek_pos_ec);
+
+        seek_pos_sc.setOnTouchListener(new SeekTouchListener(){
+            @Override
+            public int min() {
+                return 0;
+            }
+
+            @Override
+            public int max() {
+                return max_seek_margin - 20;
+            }
+
+            @Override
+            public void changed(int margin_position) {
+                min_seek_margin = margin_position;
+
+                int sc = min_seek_margin == 0 ? 0 : mPlayer.getDuration() * min_seek_margin / seek_total.getWidth();
+                seek_start.setText(Util.toDisplay(min_seek = sc));
+                mPlayer.seekTo(min_seek);
+            }
+        });
+        seek_pos_ec.setOnTouchListener(new SeekTouchListener(){
+            @Override
+            public int min() {
+                return min_seek_margin + 20;
+            }
+
+            @Override
+            public int max() {
+                return seek_total.getWidth();
+            }
+
+            @Override
+            public void changed(int margin_position) {
+                max_seek_margin = margin_position;
+
+                int ec = max_seek_margin == 0 ? 0 : mPlayer.getDuration() * max_seek_margin / seek_total.getWidth();
+                seek_end  .setText(Util.toDisplay(max_seek = ec));
+
+            }
+        });
 
         mOnNavigationItemSelectedListener
         = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -72,6 +148,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     switch (item.getItemId()) {
                         case R.id.navigation_home:
+
+                            NotificationManager manager = (NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                            Notification.Builder builder;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                                if (manager.getNotificationChannel("1") == null) {
+                                    NotificationChannel mChannel = new NotificationChannel("1", "Buddies", NotificationManager.IMPORTANCE_HIGH);
+                                    AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                                            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
+                                    manager.createNotificationChannel(mChannel);
+                                }
+                                builder = new Notification.Builder(MainActivity.this, "1");
+                            }
+                            else {
+                                builder = new Notification.Builder(MainActivity.this);
+                            }
+
+                            builder.setContentTitle("Title");
+                            builder.setContentText("Content");
+
+                            builder
+                            .setAutoCancel(false)
+                            .setOngoing(false)
+                            .setOnlyAlertOnce(true)
+                            .setSmallIcon(R.mipmap.ic_launcher_round)
+                            ;
+
+                            manager.notify(1, builder.getNotification());
+
                             return true;
                         case R.id.navigation_dashboard:
                             return true;
@@ -98,6 +205,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             if (view == btn_add) {
                 addTrack();
+            }
+            else if (view == btn_del) {
+                delTrack();
+            }
+            else if (view == btn_menu_cancel) {
+                closeMenuTrack();
             }
             else if (view == btn_play_pause) {
                 if (btn_play_pause.isActivated()) {
@@ -139,9 +252,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 try {
-                    while (!App.isServiceReady) {
-                        Thread.sleep(500);
-                    }
                     Cursor cr = DB.query("select path, _id from FILE order by last_update desc limit 1");
                     if (cr.moveToFirst()) {
                         prepare(new File(cr.getString(0)));
@@ -154,12 +264,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     while (cr.moveToNext()) {
                         mAdapterTrack.DATA.add(new Object[]{cr.getInt(0), cr.getString(1), cr.getInt(2), cr.getInt(3)});
                     }
-                    rcvw_track.getHandler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAdapterTrack.notifyDataSetChanged();
-                        }
-                    });
+                    if (rcvw_track.getHandler() != null) {
+                        rcvw_track.getHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapterTrack.notifyDataSetChanged();
+                            }
+                        });
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -171,10 +283,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Adapter mAdapterTrack;
     private MediaMetadataRetriever mInfo;
     private MediaPlayer mPlayer;
-    private Button btn_add;
+    private ImageButton btn_add;
+    private ImageButton btn_del;
     private TextView txt_title;
+
     private ImageButton btn_play_pause;
     private RecyclerView rcvw_track;
+    private LinearLayoutManager rcvw_track_layout_manager;
     private int mSelectedTrack = -1;
 
     private void prepare(File file) throws Exception {
@@ -192,6 +307,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPlayer.prepare();
     }
 
+    private View lnly_menu;
+    private View lnly_menu_confirm;
+    private Button btn_menu_ok;
+    private Button btn_menu_cancel;
+
     private View seek_pos_sc;
     private View seek_pos_ec;
     private TextView seek_start;
@@ -199,10 +319,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private View seek_total;
     private View seek_line;
     private Runnable mSeekRunnable;
+    private TextView track_selected;
 
     private int min_seek = 0;
     private int max_seek = 0;
-    private int len_seek = 0;
+    private int min_seek_margin = 0;
+    private int max_seek_margin = 0;
     private void initializeSeek() {
         if (mSeekRunnable != null) {
             return;
@@ -214,8 +336,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  * SEEK, TIMER, DLL
                  */
                 try {
+                    //8dp is size of circle seek
                     ViewGroup.LayoutParams params = seek_line.getLayoutParams();
-                    params.width = len_seek * (mPlayer.getCurrentPosition() - min_seek) / (max_seek - min_seek);
+                    params.width = (max_seek_margin - dip(8) - min_seek_margin) * (mPlayer.getCurrentPosition() - min_seek) / (max_seek - min_seek);
                     seek_line.setLayoutParams(params);
 
                     seek_start.setText(Util.toDisplay(mPlayer.getCurrentPosition()));
@@ -264,11 +387,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ec_params.setMargins(p_ec = seek_total.getWidth() * ec / mPlayer.getDuration(), 0, 0, 0);
         seek_pos_ec.setLayoutParams(ec_params);
 
-        len_seek = p_ec - p_sc;
+        min_seek_margin = p_sc;
+        max_seek_margin = p_ec;
 
         mPlayer.seekTo(sc);
     }
 
+    private void closeMenuTrack() {
+        mAdapterTrack.isChecking = false;
+        mSelectedTrack = -1;
+        track_selected.setText("");
+        notifyVisible();
+        lnly_menu_confirm.setVisibility(View.INVISIBLE);
+    }
+
+    private void delTrack() {
+        mAdapterTrack.isChecking = true;
+        notifyVisible();
+        lnly_menu_confirm.setVisibility(View.VISIBLE);
+        btn_menu_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    int size = mAdapterTrack.ITEM_CHECK.size();
+                    for (int i = 0; i < size; i++) {
+                        int id = mAdapterTrack.ITEM_CHECK.keyAt(i);
+                        if (id >= 0 && mAdapterTrack.ITEM_CHECK.get(id, false)) {
+                            Object[] data = mAdapterTrack.getItem(id);
+                            DB.delete("FILE_TRACK", "_id=" + data[0]);
+                            int idx = mAdapterTrack.indexOf(id);
+                            mAdapterTrack.DATA.remove(idx);
+                            mAdapterTrack.notifyItemRemoved(idx);
+                        }
+                    }
+
+                    closeMenuTrack();
+                } catch (Exception e) {
+                    Log.e("", "", e);
+                }
+            }
+        });
+    }
+
+    private void notifyVisible() {
+        if (!mAdapterTrack.DATA.isEmpty()) {
+            mAdapterTrack.notifyItemRangeChanged(0, mAdapterTrack.DATA.size());
+        }
+    }
 
     private void addTrack() {
         final Dialog dialog = new Dialog(MainActivity.this);
@@ -277,7 +442,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final EditText edtx_start = view.findViewById(R.id.edtx_start);
         final EditText edtx_end   = view.findViewById(R.id.edtx_end);
         Button   btn_save   = view.findViewById(R.id.btn_save);
+        Button   btn_cancel = view.findViewById(R.id.btn_cancel);
         CheckBox chbx_seek  = view.findViewById(R.id.chbx_selection);
+
+        edtx_title.setText(mAdapterTrack.getNewTitle());
 
         chbx_seek.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -300,17 +468,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         chbx_seek.setChecked(true);
 
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    dialog.dismiss();
+                } catch (Exception e) {
+                    Log.e("", "", e);
+                }
+            }
+        });
 
         btn_save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
+                    if (edtx_title.getText().toString().trim().isEmpty()) {
+                        toast("Please set title");
+                        edtx_title.requestFocus();
+                        return;
+                    }
+
+                    if (Util.fromDisplay(edtx_start.getText().toString()) == -1) {
+                        toast("Invalid of start time");
+                        edtx_start.requestFocus();
+                        return;
+                    }
+
+                    if (Util.fromDisplay(edtx_end.getText().toString()) == -1) {
+                        toast("Invalid of end time");
+                        edtx_end.requestFocus();
+                        return;
+                    }
+
+                    if (Util.fromDisplay(edtx_start.getText().toString()) == Util.fromDisplay(edtx_end.getText().toString())) {
+                        toast("No selection time");
+                        edtx_end.requestFocus();
+                        return;
+                    }
+
                     addTrack(edtx_title.getText().toString(), edtx_start.getText().toString(), edtx_end.getText().toString());
                     dialog.dismiss();
                 } catch (Exception e) {
                     Log.e("", "", e);
                 }
             }
+
         });
         dialog.setContentView(view);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
@@ -403,6 +606,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         public TextView title;
         public TextView time;
+        public CheckBox checkbox;
 
         public Holder(@NonNull View itemView) {
             super(itemView);
@@ -412,6 +616,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private class Adapter extends RecyclerView.Adapter<Holder> {
 
+        public boolean isChecking = false;
+        public SparseBooleanArray  ITEM_CHECK = new SparseBooleanArray();
         public ArrayList<Object[]> DATA = new ArrayList<>();
         //0:_id 1:title 2:sc 3:ec
 
@@ -423,6 +629,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 holder.title  = view.findViewById(R.id.title);
                 holder.time   = view.findViewById(R.id.time);
+                holder.checkbox = view.findViewById(R.id.chbx_selection);
             } catch (Exception e) {
                 Log.e("", "", e);
             }
@@ -430,44 +637,71 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public void onBindViewHolder(@NonNull Holder holder, int index) {
+        public void onBindViewHolder(@NonNull final Holder holder, final int index) {
             try {
                 final Object[] data = DATA.get(index);
 
-                boolean is_selected = (int) data[0] == mSelectedTrack;
-
-                holder.title.setEnabled(is_selected);
-                holder.time .setEnabled(is_selected);
-
-                holder.itemView.setBackgroundColor(is_selected ? getResources().getColor(R.color.colorPrimaryDarkLight) : getResources().getColor(android.R.color.transparent));
-
+                final int _id = (int) data[0];
                 holder.title.setText((String) data[1]);
                 holder.time .setText(Util.toDisplay((int) data[2]) + " - " + Util.toDisplay((int) data[3]) );
 
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        try {
-                            if (mSelectedTrack == (int) data[0]) {
-                                return;
-                            }
-
-                            if (mPlayer.isPlaying()) {
-                                btn_play_pause.callOnClick();
-                            }
-
-                            int last_selected = mSelectedTrack;
-                            mSelectedTrack    = (int) data[0];
-
-                            mAdapterTrack.notifyItemChanged(indexOf(mSelectedTrack));
-                            if (last_selected != -1) mAdapterTrack.notifyItemChanged(indexOf(last_selected));
-
-                            seekSelect((int) data[2], (int) data[3]);
-                        } catch (Exception e) {
-                            Log.e("", "", e);
+                if (isChecking) {
+                    holder.title.setEnabled(false);
+                    holder.time .setEnabled(false);
+                    holder.checkbox.setVisibility(View.VISIBLE);
+                    holder.checkbox.setChecked(ITEM_CHECK.get(_id, false));
+                    holder.checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            ITEM_CHECK.put(_id, isChecked);
                         }
-                    }
-                });
+                    });
+
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                ITEM_CHECK.put(_id, !ITEM_CHECK.get(_id, false));
+                                holder.checkbox.setChecked(ITEM_CHECK.get(_id, false));
+                            } catch (Exception e) {
+                                Log.e("", "", e);
+                            }
+                        }
+                    });
+                }
+                else {
+                    boolean is_selected =  _id == mSelectedTrack;
+
+                    holder.title.setEnabled(is_selected);
+                    holder.time .setEnabled(is_selected);
+
+                    holder.checkbox.setVisibility(View.GONE);
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                if (mSelectedTrack == (int) data[0]) {
+                                    return;
+                                }
+
+                                if (mPlayer.isPlaying()) {
+                                    btn_play_pause.callOnClick();
+                                }
+
+                                int last_selected = mSelectedTrack;
+                                mSelectedTrack    = (int) data[0];
+
+                                mAdapterTrack.notifyItemChanged(indexOf(mSelectedTrack));
+                                if (last_selected != -1) mAdapterTrack.notifyItemChanged(indexOf(last_selected));
+
+                                track_selected.setText((String) data[1]);
+                                seekSelect((int) data[2], (int) data[3]);
+                            } catch (Exception e) {
+                                Log.e("", "", e);
+                            }
+                        }
+                    });
+                }
             } catch (Exception e) {
                 Log.e("", "", e);
             }
@@ -487,7 +721,98 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return -1;
         }
 
+        public Object[] getItem(int pId) {
+            return DATA.get(indexOf(pId));
+        }
+
+        public String getNewTitle() {
+            int id = 1;
+            String title = "Track";
+            boolean found;
+            do {
+                found = false;
+                for (Object[] obj : DATA) {
+                    if ((title + id).toLowerCase().replaceAll(" ", "").trim().equals(
+                            String.valueOf(obj[1]).toLowerCase().replaceAll(" ", "").trim())) {
+                        id++;
+                        found = true;
+                    }
+                }
+            } while (found);
+            return title + " " + id;
+        }
+
     }
 
+    private void toast(String message) {
+        Toast toast = Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+        toast.show();
+    }
+
+    private class SeekTouchListener implements View.OnTouchListener {
+
+        int prevX, prevY;
+
+        public boolean onTouch(View view, MotionEvent event) {
+            final RelativeLayout.LayoutParams par = (RelativeLayout.LayoutParams) view.getLayoutParams();
+            switch(event.getAction()) {
+                case MotionEvent.ACTION_MOVE:
+                {
+                    int margin = par.leftMargin + (int) event.getRawX()-prevX;
+                    if (margin < min()) {
+                        margin = min();
+                    }
+                    else if (margin > max()) {
+                        margin = max();
+                    }
+                    par.leftMargin = margin;
+                    prevX = (int) event.getRawX();
+                    view.setLayoutParams(par);
+                    changed(par.leftMargin);
+                    return true;
+                }
+                case MotionEvent.ACTION_UP:
+                {
+                    view.setPressed(false);
+                    return true;
+                }
+                case MotionEvent.ACTION_DOWN:
+                {
+                    view.setPressed(true);
+                    prevX=(int)event.getRawX();
+                    prevY=(int)event.getRawY();
+
+                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    // Vibrate for 500 milliseconds
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        v.vibrate(VibrationEffect.createOneShot(100,VibrationEffect.DEFAULT_AMPLITUDE));
+                    }else{
+                        //deprecated in API 26
+                        v.vibrate(100);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public int min() {
+            return 0;
+        }
+
+        public int max() {
+            return 0;
+        }
+
+        public void changed(int margin_position) {
+
+        }
+    }
+
+    int dip(int pValue) {
+        Resources r = getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pValue,r.getDisplayMetrics()));
+    }
 
 }

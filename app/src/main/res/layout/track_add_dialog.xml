@@ -8,16 +8,16 @@
     android:backgroundTint="@color/colorPrimaryLight">
 
     <RelativeLayout
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="52dp"
         android:background="@drawable/top_round_white_transparent"
         android:backgroundTint="@color/colorPrimary">
 
         <Button
-            android:id="@+id/btn_save"
+            android:id="@+id/btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="52dp"
-            android:text="SAVE"
+            android:text="Cancel"
             android:textSize="18sp"
             android:textAlignment="center"
             android:padding="0dp"
@@ -29,8 +29,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="Add Track"
-            android:textSize="22sp"
+            android:text="NEW TRACK"
+            android:textSize="18sp"
             android:textColor="#FFFFFFFF"
             android:layout_marginLeft="16dp"
             />
@@ -38,8 +38,9 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingBottom="16dp"
         >
 
         <EditText
@@ -123,6 +124,20 @@
             android:textColor="@color/colorPrimaryDark"
             android:checked="false"
             />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:text="SAVE"
+            android:textSize="18sp"
+            android:textAlignment="center"
+            android:padding="0dp"
+            android:textColor="#FFFFFFFF"
+            android:background="@drawable/selector_btn_primary"
+            android:layout_below="@+id/chbx_selection"
+            android:layout_alignRight="@+id/edtx_end"
+            android:layout_alignLeft="@+id/edtx_end"/>
 
     </RelativeLayout>
 

@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.fx.app.fxmplayer.App;
+import com.fx.app.fxmplayer.MainActivity;
 import com.fx.app.sqlite.DB;
 
 public class AppService extends Service {

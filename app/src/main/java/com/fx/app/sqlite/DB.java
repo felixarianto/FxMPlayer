@@ -71,7 +71,7 @@ public class DB extends SQLiteOpenHelper implements DatabaseErrorHandler {
         return db.getWritableDatabase().update(p_table, p_values, p_where, null);
     }
 
-    public static long delete(String p_table, ContentValues p_values, String p_where) {
+    public static long delete(String p_table, String p_where) {
         return db.getWritableDatabase().delete(p_table, p_where, null);
     }
 
