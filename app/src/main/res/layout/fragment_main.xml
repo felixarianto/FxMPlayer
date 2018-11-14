@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:id="@+id/rvly_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="8dp"
+        >
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/card_thumb"
+            android:layout_width="120dp"
+            android:layout_height="110dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            >
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/main_thumb_bg"/>
+
+        </android.support.v7.widget.CardView>
+
+        <TextView
+            android:id="@+id/txt_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:textSize="16sp"
+            android:text="Surah Arrahman Qiro Verses"
+            android:textColor="@color/text_primary"
+            android:layout_toRightOf="@+id/card_thumb"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:fadingEdgeLength="10dp"/>
+
+        <TextView
+            android:id="@+id/txt_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:ellipsize="marquee"
+            android:textSize="11sp"
+            android:text="Abdurrahman Al Ausyi"
+            android:textColor="@color/text_secondary"
+            android:layout_toRightOf="@+id/card_thumb"
+            android:layout_below="@id/txt_title"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:fadingEdgeLength="10dp"/>
+
+
+        <ImageButton
+            android:id="@+id/btn_next_track"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:padding="8dp"
+            android:layout_marginLeft="24dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_skip_next_black_24dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/selector_button_text_color"
+            android:layout_alignBottom="@+id/card_thumb"
+            android:layout_alignParentRight="true"/>
+
+        <ImageButton
+            android:id="@+id/btn_previous_track"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:padding="8dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_skip_previous_black_24dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/selector_button_text_color"
+            android:layout_alignBottom="@+id/btn_next_track"
+            android:layout_toLeftOf="@+id/btn_next_track"
+            />
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/seek"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp">
+
+        <RelativeLayout
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="30dp">
+
+            <View
+                android:id="@+id/seek_total"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@color/colorPrimaryLight"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                />
+
+            <RelativeLayout
+                android:id="@+id/seek_pos_sc"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:background="@drawable/selector_circle_transparent_white">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/circle_accent"
+                    android:layout_marginLeft="0dp"
+                    android:layout_centerInParent="true"
+                    />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/seek_pos_ec"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:background="@drawable/selector_circle_transparent_white">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/circle_accent"
+                    android:layout_marginLeft="0dp"
+                    android:layout_centerInParent="true"
+                    />
+
+            </RelativeLayout>
+
+            <View
+                android:id="@+id/seek_line"
+                android:layout_width="0dp"
+                android:layout_height="2dp"
+                android:background="@color/colorAccent"
+                android:layout_alignLeft="@+id/seek_pos_sc"
+                android:layout_marginLeft="19dp"
+                android:layout_centerVertical="true"/>
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/seek_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/seek_bar"
+            android:layout_alignLeft="@+id/seek_bar"
+            android:textSize="11sp"
+            android:textColor="@color/text_light"
+            android:text="00:00"
+            android:layout_marginLeft="15dp"/>
+
+        <TextView
+            android:id="@+id/seek_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/seek_bar"
+            android:layout_alignRight="@+id/seek_bar"
+            android:textSize="11sp"
+            android:textColor="@color/text_light"
+            android:text="00:00"
+            android:layout_marginRight="15dp"/>
+
+        <TextView
+            android:id="@+id/track_selected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/seek_bar"
+            android:layout_toRightOf="@+id/seek_start"
+            android:layout_toLeftOf="@+id/seek_end"
+            android:gravity="center"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textSize="16sp"
+            android:textColor="@color/colorAccent"
+            android:text=""
+            android:scrollHorizontally="true"/>
+
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/btn_play_pause_card"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="26dp"
+            app:cardBackgroundColor="@color/colorAccent"
+            android:layout_below="@+id/seek_start"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="3dp"
+            >
+
+            <ImageButton
+                android:id="@+id/btn_play_pause"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="10dp"
+                android:layout_below="@+id/seek_start"
+                android:layout_centerHorizontal="true"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/selector_btn_play_pause"
+                android:scaleType="fitCenter"
+                android:tint="#FFFFFFFF"
+                />
+
+        </android.support.v7.widget.CardView>
+
+
+        <ImageButton
+            android:id="@+id/btn_next"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:padding="10dp"
+            android:layout_alignTop="@+id/btn_play_pause_card"
+            android:layout_toRightOf="@+id/btn_play_pause_card"
+            android:layout_marginLeft="52dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_fast_forward_black_24dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/selector_button_text_color"/>
+
+        <ImageButton
+            android:id="@+id/btn_previous"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:padding="10dp"
+            android:layout_alignTop="@+id/btn_play_pause_card"
+            android:layout_toLeftOf="@+id/btn_play_pause_card"
+            android:layout_marginRight="52dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_fast_rewind_black_24dp"
+            android:scaleType="fitCenter"
+            android:tint="@color/selector_button_text_color"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/lnly_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp"
+        android:layout_below="@id/rvly_info"
+        android:layout_above="@+id/seek">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="10 Sections"
+                android:textColor="@color/text_light"
+                android:textSize="11sp"
+                android:gravity="center_vertical"/>
+
+            <ImageButton
+                android:id="@+id/btn_add"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_playlist_add_black_24dp"
+                android:tint="@color/colorAccent"
+                android:textAlignment="center"
+                android:padding="0dp"
+                android:textColor="@color/selector_button_text_color"
+                android:background="@android:color/transparent"
+                android:layout_alignParentRight="true"/>
+
+        </RelativeLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rcvw_track"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            />
+
+    </LinearLayout>
+
+</RelativeLayout>

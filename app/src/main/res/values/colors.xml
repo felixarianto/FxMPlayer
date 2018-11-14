@@ -7,6 +7,9 @@
     <color name="colorPrimaryDarkLight">#838586</color>
 
     <color name="black_overlay">#66000000</color>
+    <color name="text_primary">#FDFDFD</color>
+    <color name="text_secondary">#BFBFBF</color>
+    <color name="text_light">#7C7C7C</color>
 
 
 </resources>
