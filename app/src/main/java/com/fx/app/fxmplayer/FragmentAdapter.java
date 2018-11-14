@@ -11,12 +11,17 @@ public class FragmentAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
-    public Fragment getItem(int i) {
+    public Fragment getItem(int index) {
+        if (index == 0) {
+            return new FragmentMain();
+        }
         return null;
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return 1;
     }
+
+
 }
