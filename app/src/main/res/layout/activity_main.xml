@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_layout"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:openDrawer="end"
     tools:context=".MainActivity"
-    android:background="@drawable/main_bg">
+    android:background="@drawable/main_bg"
+    android:theme="@style/AppTheme">
 
     <LinearLayout
         android:id="@+id/main_content"
@@ -18,19 +18,17 @@
         <android.support.design.widget.AppBarLayout
             android:id="@+id/app_bar_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            app:elevation="0dp"
+            android:layout_height="?actionBarSize"
+            android:background="@android:color/transparent"
+            android:fitsSystemWindows="true"
+            android:elevation="0dp"
             >
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:title="Main Player"
-                android:gravity="center"
-                android:theme="@style/MainToolbar"
-                app:popupTheme="@style/MainToolbar"/>
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
         </android.support.design.widget.AppBarLayout>
 
@@ -44,16 +42,4 @@
     </LinearLayout>
 
 
-    <android.support.design.widget.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:fitsSystemWindows="false"
-        app:headerLayout="@layout/drawer_header"
-        app:itemIconTint="@color/text_light"
-        app:itemTextColor="@color/text_light"
-        app:menu="@menu/navigation"
-        android:background="@color/text_primary"/>
-
-</android.support.v4.widget.DrawerLayout>
+</RelativeLayout>

@@ -2,15 +2,11 @@ package com.fx.app.fxmplayer;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -23,26 +19,28 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
+import android.widget.ListPopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,13 +48,15 @@ import com.fx.app.sqlite.DB;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class FragmentMain extends FragmentView implements View.OnClickListener , MediaPlayer.OnPreparedListener {
 
+    private final String TAG = "FragmentMain";
 
     public FragmentMain() {
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,6 +66,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     @Override
     public void onCreateView(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.fragment_main);
+        setHasOptionsMenu(true);
         /*
          * INFO
          */
@@ -81,10 +82,6 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
         rcvw_track = findViewById(R.id.rcvw_track);
         rcvw_track.setAdapter(mAdapterTrack = new Adapter());
-
-        DividerItemDecoration divider = new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL);
-        divider.setDrawable(getResources().getDrawable(R.drawable.divider_list));
-        rcvw_track.addItemDecoration(divider);
         rcvw_track_layout_manager = (LinearLayoutManager) rcvw_track.getLayoutManager();
 
         /*
@@ -152,6 +149,23 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     }
 
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.open) {
+//            Intent intent = new Intent();
+//            intent.setType("audio/*");
+//            intent.setAction(Intent.ACTION_GET_CONTENT);
+
+            Intent intent = new Intent(getActivity(), LibraryActivity.class);
+            startActivityForResult(intent,REQUEST_CODE_ADD_FILE);
+        }
+        return false;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -184,7 +198,6 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         } catch (Exception e) {
             Log.e("", "", e);
         }
-
     }
 
 
@@ -553,7 +566,8 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
         public TextView title;
         public TextView time;
-        public CheckBox checkbox;
+        public RelativeLayout rvly_layout;
+        public ImageButton btn_menu;
 
         public Holder(@NonNull View itemView) {
             super(itemView);
@@ -576,7 +590,8 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             try {
                 holder.title  = view.findViewById(R.id.title);
                 holder.time   = view.findViewById(R.id.time);
-                holder.checkbox = view.findViewById(R.id.chbx_selection);
+                holder.rvly_layout = view.findViewById(R.id.rvly_layout);
+                holder.btn_menu = view.findViewById(R.id.btn_menu);
             } catch (Exception e) {
                 Log.e("", "", e);
             }
@@ -592,63 +607,40 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 holder.title.setText((String) data[1]);
                 holder.time .setText(Util.toDisplay((int) data[2]) + " - " + Util.toDisplay((int) data[3]) );
 
-                if (isChecking) {
-                    holder.title.setEnabled(false);
-                    holder.time .setEnabled(false);
-                    holder.checkbox.setVisibility(View.VISIBLE);
-                    holder.checkbox.setChecked(ITEM_CHECK.get(_id, false));
-                    holder.checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            ITEM_CHECK.put(_id, isChecked);
-                        }
-                    });
-
-                    holder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            try {
-                                ITEM_CHECK.put(_id, !ITEM_CHECK.get(_id, false));
-                                holder.checkbox.setChecked(ITEM_CHECK.get(_id, false));
-                            } catch (Exception e) {
-                                Log.e("", "", e);
+                holder.rvly_layout.setActivated(false);
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            if (mSelectedTrack == (int) data[0]) {
+                                return;
                             }
-                        }
-                    });
-                }
-                else {
-                    boolean is_selected =  _id == mSelectedTrack;
 
-                    holder.title.setEnabled(is_selected);
-                    holder.time .setEnabled(is_selected);
-
-                    holder.checkbox.setVisibility(View.GONE);
-                    holder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            try {
-                                if (mSelectedTrack == (int) data[0]) {
-                                    return;
-                                }
-
-                                if (mPlayer.isPlaying()) {
-                                    btn_play_pause.callOnClick();
-                                }
-
-                                int last_selected = mSelectedTrack;
-                                mSelectedTrack    = (int) data[0];
-
-                                mAdapterTrack.notifyItemChanged(indexOf(mSelectedTrack));
-                                if (last_selected != -1) mAdapterTrack.notifyItemChanged(indexOf(last_selected));
-
-                                track_selected.setText((String) data[1]);
-                                seekSelect((int) data[2], (int) data[3]);
-                            } catch (Exception e) {
-                                Log.e("", "", e);
+                            if (mPlayer.isPlaying()) {
+                                btn_play_pause.callOnClick();
                             }
+
+                            int last_selected = mSelectedTrack;
+                            mSelectedTrack    = (int) data[0];
+
+                            holder.rvly_layout.setActivated(true);
+
+                            if (last_selected != -1) mAdapterTrack.notifyItemChanged(indexOf(last_selected));
+
+                            track_selected.setText((String) data[1]);
+                            seekSelect((int) data[2], (int) data[3]);
+                        } catch (Exception e) {
+                            Log.e("", "", e);
                         }
-                    });
-                }
+                    }
+                });
+
+                holder.btn_menu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        openMenu(view, index);
+                    }
+                });
             } catch (Exception e) {
                 Log.e("", "", e);
             }
@@ -674,7 +666,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
         public String getNewTitle() {
             int id = 1;
-            String title = "Track";
+            String title = "Section";
             boolean found;
             do {
                 found = false;
@@ -687,6 +679,47 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 }
             } while (found);
             return title + " " + id;
+        }
+
+        private void openMenu(final View anchor, final int index) {
+            List<HashMap<String, Object>> data = new ArrayList<HashMap<String, Object>>();
+            HashMap<String, Object>
+            menu = new HashMap<String, Object>();
+            menu.put("title", "Rename");
+            data.add(menu);
+            menu = new HashMap<String, Object>();
+            menu.put("title", "Delete");
+            data.add(menu);
+
+            ListPopupWindow popupWindow = new ListPopupWindow(getContext());
+
+            ListAdapter adapter = new SimpleAdapter(
+                    getContext(),
+                    data,
+                    android.R.layout.activity_list_item, // You may want to use your own cool layout
+                    new String[] {"title"}, // These are just the keys that the data uses
+                    new int[] {android.R.id.text1}); // The view ids to map the data to
+
+            popupWindow.setAnchorView(anchor);
+            popupWindow.setAdapter(adapter);
+            popupWindow.setWidth(400); // note: don't use pixels, use a dimen resource
+            popupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    try {
+                        if (i == 0) {
+
+                        }
+                        else if (i == 1) {
+                            DATA.remove(index);
+                            notifyItemRemoved(index);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "", e);
+                    }
+                }
+            }); // the callback for when a list item is selected
+            popupWindow.show();
         }
 
     }

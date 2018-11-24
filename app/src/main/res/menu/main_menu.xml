@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
 
     <item
-        android:id="@+id/navigation_home"
-        android:icon="@drawable/ic_folder_open_black_24dp"
-        android:title="@string/title_home"
-        app:showAsAction="always"/>
+        android:id="@+id/open"
+        android:title="Open File"
+        app:showAsAction="never"/>
 
 </menu>
