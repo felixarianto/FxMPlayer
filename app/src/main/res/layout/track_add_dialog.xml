@@ -1,144 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@drawable/round_white_transparent"
-    android:backgroundTint="@color/colorPrimaryLight">
+    >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:background="@drawable/top_round_white_transparent"
-        android:backgroundTint="@color/colorPrimary">
-
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="52dp"
-            android:text="Cancel"
-            android:textSize="18sp"
-            android:textAlignment="center"
-            android:padding="0dp"
-            android:textColor="@color/selector_button_text_color"
-            android:background="@android:color/transparent"
-            android:layout_alignParentRight="true"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:text="NEW TRACK"
-            android:textSize="18sp"
-            android:textColor="#FFFFFFFF"
-            android:layout_marginLeft="16dp"
-            />
-
-    </RelativeLayout>
-
-    <RelativeLayout
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="0dp"
+        android:layout_margin="4dp"
         >
 
-        <EditText
-            android:id="@+id/edtx_title"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="52dp"
-            android:textSize="28sp"
-            android:gravity="center_vertical"
-            android:textColor="@color/colorPrimaryDark"
-            android:background="@drawable/selector_edit_text"
-            android:hint="Title..."
-            android:padding="8dp"
-            android:layout_margin="16dp"
-            android:maxLength="20"/>
+            android:orientation="vertical"
+            android:background="@drawable/main_bg">
 
-        <EditText
-            android:id="@+id/edtx_start"
-            android:layout_width="100dp"
-            android:layout_height="52dp"
-            android:background="@drawable/selector_edit_text"
-            android:layout_below="@id/edtx_title"
-            android:layout_marginTop="30dp"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="16dp"
-            android:text="00:00"
-            android:textSize="28sp"
-            android:gravity="center"
-            android:textColor="@color/colorPrimaryDark"
-            android:enabled="false"
-            android:maxLength="5"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                >
 
-        <EditText
-            android:id="@+id/edtx_end"
-            android:layout_width="100dp"
-            android:layout_height="52dp"
-            android:background="@drawable/selector_edit_text"
-            android:layout_below="@id/edtx_title"
-            android:layout_marginTop="30dp"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="16dp"
-            android:text="00:00"
-            android:textSize="28sp"
-            android:gravity="center"
-            android:textColor="@color/colorPrimaryDark"
-            android:enabled="false"
-            android:maxLength="5"/>
+                <ImageButton
+                    android:id="@+id/btn_cancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:textSize="18sp"
+                    android:textAlignment="center"
+                    android:padding="20dp"
+                    android:src="@drawable/ic_close_black_24dp"
+                    android:tint="@color/selector_button_text_color"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:layout_alignParentRight="true"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/edtx_start"
-            android:layout_alignRight="@id/edtx_start"
-            android:layout_below="@+id/edtx_title"
-            android:text="START"
-            android:gravity="center"
-            android:textSize="18sp"
-            />
+                <CheckBox
+                    android:id="@+id/chbx_selection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:text="Current selection"
+                    android:layout_centerVertical="true"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginLeft="8dp"
+                    android:textSize="16sp"
+                    android:textColor="@color/selector_checkbox_color"
+                    android:buttonTint="@color/selector_checkbox_color"
+                    android:checked="true"
+                    />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/edtx_end"
-            android:layout_alignRight="@id/edtx_end"
-            android:layout_below="@+id/edtx_title"
-            android:text="END"
-            android:gravity="center"
-            android:textSize="18sp"
-            />
+            </RelativeLayout>
 
-        <CheckBox
-            android:id="@+id/chbx_selection"
-            android:layout_width="wrap_content"
-            android:layout_height="42dp"
-            android:text="From current selection"
-            android:layout_alignLeft="@id/edtx_start"
-            android:layout_below="@id/edtx_start"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="-8dp"
-            android:textSize="16sp"
-            android:textColor="@color/colorPrimaryDark"
-            android:checked="false"
-            />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                >
 
-        <Button
-            android:id="@+id/btn_save"
-            android:layout_width="wrap_content"
-            android:layout_height="52dp"
-            android:text="SAVE"
-            android:textSize="18sp"
-            android:textAlignment="center"
-            android:padding="0dp"
-            android:textColor="#FFFFFFFF"
-            android:background="@drawable/selector_btn_primary"
-            android:layout_below="@+id/chbx_selection"
-            android:layout_alignRight="@+id/edtx_end"
-            android:layout_alignLeft="@+id/edtx_end"/>
+                <EditText
+                    android:id="@+id/edtx_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusedByDefault="false"
+                    android:hint="New Section..."
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingTop="8dp"
+                    android:background="@drawable/selector_edit_text_enabled"
+                    android:textColor="@color/text_light"
+                    android:textColorHint="@color/text_secondary"
+                    android:textSize="24sp"
+                    android:maxLength="20"
+                    android:layout_margin="12dp"/>
 
-    </RelativeLayout>
+                <EditText
+                    android:id="@+id/edtx_start"
+                    android:layout_width="100dp"
+                    android:layout_height="52dp"
+                    android:layout_below="@id/edtx_title"
+                    android:layout_marginTop="30dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginLeft="12dp"
+                    android:text="00:00"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:background="@drawable/selector_edit_text_enabled"
+                    android:textColor="@color/text_light"
+                    android:textColorHint="@color/text_secondary"
+                    android:enabled="false"
+                    android:maxLength="5"
+                    android:inputType="number"/>
+
+                <EditText
+                    android:id="@+id/edtx_end"
+                    android:layout_width="100dp"
+                    android:layout_height="52dp"
+                    android:layout_below="@id/edtx_title"
+                    android:layout_marginTop="30dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="12dp"
+                    android:text="00:00"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:background="@drawable/selector_edit_text_enabled"
+                    android:textColor="@color/text_light"
+                    android:textColorHint="@color/text_secondary"
+                    android:enabled="false"
+                    android:maxLength="5"
+                    android:inputType="number"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/edtx_start"
+                    android:layout_alignRight="@id/edtx_start"
+                    android:layout_below="@+id/edtx_title"
+                    android:text="Start"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/edtx_end"
+                    android:layout_alignRight="@id/edtx_end"
+                    android:layout_below="@+id/edtx_title"
+                    android:text="End"
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    />
+
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:layout_marginBottom="16dp"
+                android:layout_height="52dp"
+                android:text="SAVE"
+                android:textSize="18sp"
+                android:textAlignment="center"
+                android:padding="0dp"
+                android:textColor="#FFFFFFFF"
+                android:textStyle="bold"
+                android:background="@drawable/selector_btn_primary"
+                android:backgroundTint="@color/colorPrimary"
+                android:layout_alignRight="@+id/edtx_end"
+                android:layout_alignLeft="@+id/edtx_end"/>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
 
 </LinearLayout>

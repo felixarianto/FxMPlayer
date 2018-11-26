@@ -1,6 +1,9 @@
 package com.fx.app.fxmplayer;
 
 
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
+
 public class Util {
 
     public static String toDisplay(int duration) {
@@ -52,5 +55,7 @@ public class Util {
         }
         return "" + v;
     }
+
+
 
 }

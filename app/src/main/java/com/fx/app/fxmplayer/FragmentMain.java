@@ -66,7 +66,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     @Override
     public void onCreateView(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.fragment_main);
-        setHasOptionsMenu(true);
+        initButton();
         /*
          * INFO
          */
@@ -157,12 +157,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.open) {
-//            Intent intent = new Intent();
-//            intent.setType("audio/*");
-//            intent.setAction(Intent.ACTION_GET_CONTENT);
 
-            Intent intent = new Intent(getActivity(), LibraryActivity.class);
-            startActivityForResult(intent,REQUEST_CODE_ADD_FILE);
         }
         return false;
     }
@@ -201,20 +196,32 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     }
 
 
-    private static final int REQUEST_CODE_ADD_FILE = 1;
+    public static final int REQUEST_CODE_ADD_FILE = 1;
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         try {
+            Log.w(TAG, "onActivityResult");
             switch (requestCode) {
                 case REQUEST_CODE_ADD_FILE:
-                    onActivityResultAddFile(requestCode, resultCode, data);
+                    onActivityResultAddFileFromLibrary(requestCode, resultCode, data);
                     break;
 
             }
 
         } catch (Exception e) {
-            Log.e("", "", e);
+            Log.e(TAG, "", e);
         }
+    }
+
+    private void initButton() {
+        findViewById(R.id.btn_open).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), LibraryActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_ADD_FILE);
+                getActivity().overridePendingTransition(R.anim.translate_right_to_left_enter, R.anim.translate_right_to_left_exit);
+            }
+        });
     }
 
     private int mFileId = -1;
@@ -402,7 +409,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         final EditText edtx_start = view.findViewById(R.id.edtx_start);
         final EditText edtx_end   = view.findViewById(R.id.edtx_end);
         Button   btn_save   = view.findViewById(R.id.btn_save);
-        Button   btn_cancel = view.findViewById(R.id.btn_cancel);
+        ImageButton   btn_cancel = view.findViewById(R.id.btn_cancel);
         CheckBox chbx_seek  = view.findViewById(R.id.chbx_selection);
 
         edtx_title.setText(mAdapterTrack.getNewTitle());
@@ -520,19 +527,16 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         }.execute();
     }
 
-    private void addFile() throws Exception {
-        Intent intent_upload = new Intent();
-        intent_upload.setType("audio/*");
-        intent_upload.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent_upload,REQUEST_CODE_ADD_FILE);
-    }
-    private void onActivityResultAddFile(int requestCode, int resultCode, final Intent data) {
+
+    private void onActivityResultAddFileFromLibrary(int requestCode, int resultCode, final Intent data) {
         if(resultCode == Activity.RESULT_OK) {
+            Log.w(TAG, "onActivityResultAddFileFromLibrary");
+
             new Thread(){
                 @Override
                 public void run() {
                     try {
-                        String path = FileUtil.getPath(getActivity(), data.getData());
+                        String path = data.getStringExtra("path");
 
                         ContentValues cvalues = new ContentValues();
                         cvalues.put("path", path);
