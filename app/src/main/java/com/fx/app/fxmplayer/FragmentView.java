@@ -34,4 +34,5 @@ public abstract class FragmentView extends Fragment {
     protected <T extends View> T findViewById(int id) {
         return mLayout.findViewById(id);
     }
+
 }

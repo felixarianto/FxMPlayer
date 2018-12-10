@@ -1,8 +1,7 @@
 package com.fx.app.fxmplayer;
 
 
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
+import android.util.Log;
 
 public class Util {
 
@@ -12,7 +11,7 @@ public class Util {
         try {
             hours = (duration / 3600000);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("Util.toDisplay", "", e);
             return out;
         }
         long remaining_minutes = (duration - (hours * 3600000)) / 60000;
@@ -45,6 +44,7 @@ public class Util {
             }
             return hour + minute + second;
         } catch (Exception e) {
+            Log.e("Util.fromDisplay", "", e);
         }
         return -1;
     }

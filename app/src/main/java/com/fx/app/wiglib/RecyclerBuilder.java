@@ -129,6 +129,7 @@ public class RecyclerBuilder {
         Thread mLoader;
         CancellationSignal mCancelLoader;
         public void loadMore() {
+            cancel();
             mCancelLoader = new CancellationSignal();
             mLoading = true;
             mLoader  = new Thread() {

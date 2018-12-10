@@ -5,12 +5,13 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
     >
 
     <RelativeLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize">
+        android:layout_height="42dp">
 
         <TextView
             android:id="@+id/txt_toolbar"
@@ -52,9 +53,11 @@
             >
 
             <ImageView
+                android:id="@+id/img_album"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/main_thumb_bg"/>
+                android:background="@drawable/main_thumb_bg"
+                android:scaleType="centerCrop"/>
 
         </android.support.v7.widget.CardView>
 
@@ -94,8 +97,7 @@
             android:id="@+id/btn_next_track"
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:padding="8dp"
-            android:layout_marginLeft="24dp"
+            android:padding="12dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_skip_next_black_24dp"
             android:scaleType="fitCenter"
@@ -103,109 +105,58 @@
             android:layout_alignBottom="@+id/card_thumb"
             android:layout_alignParentRight="true"/>
 
+        <android.support.v7.widget.CardView
+            android:id="@+id/btn_play_pause_card"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="21dp"
+            app:cardBackgroundColor="@color/colorAccent"
+            android:layout_alignTop="@id/btn_next_track"
+            android:layout_toLeftOf="@id/btn_next_track"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="3dp"
+            >
+
+            <ImageButton
+                android:id="@+id/btn_play_pause"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:layout_centerHorizontal="true"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/selector_btn_play_pause"
+                android:scaleType="fitCenter"
+                android:tint="#FFFFFFFF"
+                />
+
+        </android.support.v7.widget.CardView>
+
         <ImageButton
             android:id="@+id/btn_previous_track"
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:padding="8dp"
+            android:padding="12dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_skip_previous_black_24dp"
             android:scaleType="fitCenter"
             android:tint="@color/selector_button_text_color"
             android:layout_alignBottom="@+id/btn_next_track"
-            android:layout_toLeftOf="@+id/btn_next_track"
+            android:layout_toLeftOf="@+id/btn_play_pause_card"
             />
 
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/track_selected"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/seek"
-        android:gravity="center"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:singleLine="true"
-        android:textSize="16sp"
-        android:textColor="@color/colorAccent"
-        android:text=""
-        android:scrollHorizontally="true"/>
-
     <RelativeLayout
         android:id="@+id/seek"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="16dp">
-
-        <RelativeLayout
-            android:id="@+id/seek_bar"
-            android:layout_width="match_parent"
-            android:layout_height="30dp">
-
-            <View
-                android:id="@+id/seek_total"
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="@color/colorPrimaryLight"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="15dp"
-                android:layout_marginRight="15dp"
-                />
-
-            <RelativeLayout
-                android:id="@+id/seek_pos_sc"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerVertical="true"
-                android:background="@drawable/selector_circle_transparent_white">
-
-                <View
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:background="@drawable/circle_accent"
-                    android:layout_marginLeft="0dp"
-                    android:layout_centerInParent="true"
-                    />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/seek_pos_ec"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerVertical="true"
-                android:background="@drawable/selector_circle_transparent_white">
-
-                <View
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:background="@drawable/circle_accent"
-                    android:layout_marginLeft="0dp"
-                    android:layout_centerInParent="true"
-                    />
-
-            </RelativeLayout>
-
-            <View
-                android:id="@+id/seek_line"
-                android:layout_width="0dp"
-                android:layout_height="2dp"
-                android:background="@color/colorAccent"
-                android:layout_alignLeft="@+id/seek_pos_sc"
-                android:layout_marginLeft="19dp"
-                android:layout_centerVertical="true"/>
-
-        </RelativeLayout>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rvly_info">
 
         <TextView
             android:id="@+id/seek_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/seek_bar"
             android:layout_alignLeft="@+id/seek_bar"
             android:textSize="11sp"
             android:textColor="@color/text_light"
@@ -216,112 +167,106 @@
             android:id="@+id/seek_end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/seek_bar"
             android:layout_alignRight="@+id/seek_bar"
             android:textSize="11sp"
             android:textColor="@color/text_light"
             android:text="00:00"
             android:layout_marginRight="15dp"/>
 
+        <com.fx.app.fxmplayer.SeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/seek_start"
+            android:layout_marginBottom="4dp"
+            />
 
-        <android.support.v7.widget.CardView
-            android:id="@+id/btn_play_pause_card"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            app:cardElevation="0dp"
-            app:cardCornerRadius="26dp"
-            app:cardBackgroundColor="@color/colorAccent"
-            android:layout_below="@+id/seek_start"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="3dp"
-            >
+        <TextView
+            android:id="@+id/track_selected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/seek_start"
+            android:layout_toLeftOf="@id/seek_end"
+            android:gravity="center"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textSize="11sp"
+            android:textColor="@color/colorAccent"
+            android:text=""
+            android:scrollHorizontally="true"/>
 
-            <ImageButton
-                android:id="@+id/btn_play_pause"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp"
-                android:layout_below="@+id/seek_start"
-                android:layout_centerHorizontal="true"
-                android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/selector_btn_play_pause"
-                android:scaleType="fitCenter"
-                android:tint="#FFFFFFFF"
-                />
-
-        </android.support.v7.widget.CardView>
-
-
-        <ImageButton
-            android:id="@+id/btn_next"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/btn_play_pause_card"
-            android:layout_toRightOf="@+id/btn_play_pause_card"
-            android:layout_marginLeft="52dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_fast_forward_black_24dp"
-            android:scaleType="fitCenter"
-            android:tint="@color/selector_button_text_color"/>
+        <TextView
+            android:id="@+id/txt_section_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10 Sections"
+            android:textColor="@color/text_light"
+            android:layout_below="@id/seek_bar"
+            android:textSize="11sp"
+            android:gravity="center_vertical"
+            android:layout_marginLeft="15dp"/>
 
         <ImageButton
-            android:id="@+id/btn_previous"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:padding="10dp"
-            android:layout_alignTop="@+id/btn_play_pause_card"
-            android:layout_toLeftOf="@+id/btn_play_pause_card"
-            android:layout_marginRight="52dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_fast_rewind_black_24dp"
-            android:scaleType="fitCenter"
-            android:tint="@color/selector_button_text_color"/>
+            android:id="@+id/btn_add"
+            android:layout_width="42dp"
+            android:layout_height="20dp"
+            android:padding="4dp"
+            android:layout_marginRight="4dp"
+            android:src="@drawable/ic_playlist_add_black_24dp"
+            android:tint="@color/colorAccent"
+            android:textAlignment="center"
+            android:textColor="@color/selector_button_text_color"
+            android:background="@android:color/transparent"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/seek_bar"/>
 
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="vertical"
         android:id="@+id/lnly_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="8dp"
-        android:layout_below="@id/rvly_info"
-        android:layout_above="@+id/seek">
+        android:layout_marginTop="8dp"
+        android:layout_below="@+id/seek">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="52dp">
+        <LinearLayout
+            android:id="@+id/lyt_nosection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:alpha="0.4"
+            android:visibility="invisible">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_format_indent_increase_black_24dp"
+                android:tint="@color/text_secondary"
+                />
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="10 Sections"
-                android:textColor="@color/text_light"
-                android:textSize="11sp"
-                android:gravity="center_vertical"/>
+                android:layout_height="wrap_content"
+                android:text="No sections yet"
+                android:textColor="@color/text_secondary"/>
 
-            <ImageButton
-                android:id="@+id/btn_add"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:src="@drawable/ic_playlist_add_black_24dp"
-                android:tint="@color/colorAccent"
-                android:textAlignment="center"
-                android:padding="0dp"
-                android:textColor="@color/selector_button_text_color"
-                android:background="@android:color/transparent"
-                android:layout_alignParentRight="true"/>
-
-        </RelativeLayout>
+        </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rcvw_track"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:requiresFadingEdge="vertical"
+            android:fadingEdgeLength="40dp"
             app:layoutManager="android.support.v7.widget.LinearLayoutManager"
             />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>

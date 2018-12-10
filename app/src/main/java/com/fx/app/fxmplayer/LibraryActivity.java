@@ -14,11 +14,15 @@ import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.fx.app.sqlite.DB;
 import com.fx.app.wiglib.RecyclerBuilder;
 
 import java.util.ArrayList;
@@ -32,6 +36,7 @@ public class LibraryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
 
+        initSearch();
         initButton();
         initList();
 
@@ -53,7 +58,21 @@ public class LibraryActivity extends AppCompatActivity {
         }
     }
 
-
+    private EditText edt_search;
+    private void initSearch() {
+        edt_search = findViewById(R.id.edt_search);
+        edt_search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    DATA.clear();
+                    mLoadMoreOnScroll.loadMore();
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
     private void initButton() {
         findViewById(R.id.btn_back).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +108,7 @@ public class LibraryActivity extends AppCompatActivity {
                     TextView txt_title = view.findViewById(R.id.txt_title);
                     TextView txt_subtitle = view.findViewById(R.id.txt_subtitle);
                     TextView txt_duration = view.findViewById(R.id.txt_duration);
+                    final TextView txt_section_count = view.findViewById(R.id.txt_section_count);
                     ImageView   img_album = view.findViewById(R.id.img_album);
 
                     txt_title.setText(holder.name);
@@ -102,7 +122,10 @@ public class LibraryActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             try {
                                 Intent result = new Intent();
-                                result.putExtra("path", holder.path);
+                                result.putExtra("_id",       holder._id);
+                                result.putExtra("path",      holder.path);
+                                result.putExtra("album_art", holder.album_art);
+                                result.putExtra("album_id",  holder.album_id);
                                 setResult(RESULT_OK, result);
                                 finish();
                             } catch (Exception e) {
@@ -110,6 +133,31 @@ public class LibraryActivity extends AppCompatActivity {
                             }
                         }
                     });
+
+                    txt_section_count.setText("");
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            try {
+                                Cursor cr = DB.query("select count(*) from FILE_TRACK where file_id=" + holder._id);
+                                if (cr.moveToFirst()) {
+                                    final int count = cr.getInt(0);
+                                    if (count > 0) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                txt_section_count.setText(count + " Sections");
+                                            }
+                                        });
+                                    }
+                                }
+                                cr.close();
+                            } catch (Exception e) {
+                                Log.e(TAG, "", e);
+                            }
+                        }
+                    }.start();
+
                 }
             }
         };
@@ -144,28 +192,19 @@ public class LibraryActivity extends AppCompatActivity {
 
     }
 
-    private class FileHolder {
 
-        public String name;
-        public String path;
-        public String album_art;
-        public String artist;
-        public int    duration;
-        public boolean isSeparator = false;
-
-    }
 
 
     private int mLimit = 10;
     private void load(Context context, int index, CancellationSignal cancel) {
-        Log.w(TAG, "LOADMORE");
+        String search = edt_search.getText().toString();
         ContentResolver contentResolver = context.getContentResolver();
         Uri    uri    = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor cursor = contentResolver.query(
                 uri,
                 null,
-                null,
-                null,
+                search.isEmpty() ? null : MediaStore.Audio.Media.TITLE + " like '%" + search + "%'",
+                new String[]{},
                 MediaStore.Audio.Media.TITLE + " ASC LIMIT " + mLimit + " OFFSET " + index,
                 cancel
         );
@@ -185,18 +224,24 @@ public class LibraryActivity extends AppCompatActivity {
                     break;
                 }
                 FileHolder holder = new FileHolder();
+                holder._id = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
                 holder.name     = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 holder.artist   = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 holder.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                 holder.path     = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                String album_id = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+                holder.album_id = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+
+                if (holder.duration < 1000 * 10) {//10 Detik
+                    continue;
+                }
+
                 /*
                  * ALBUM ART
                  */
                 Cursor cursor_art = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
                         new String[] {MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
                         MediaStore.Audio.Albums._ID+ "=?",
-                        new String[] {album_id},
+                        new String[] {holder.album_id},
                         null);
 
                 if (cursor_art.moveToFirst()) {

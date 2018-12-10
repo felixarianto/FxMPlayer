@@ -12,11 +12,8 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,7 +25,6 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -37,6 +33,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.RelativeLayout;
@@ -44,12 +41,16 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.fx.app.sqlite.DB;
+import com.taishi.library.Indicator;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class FragmentMain extends FragmentView implements View.OnClickListener , MediaPlayer.OnPreparedListener {
 
@@ -63,6 +64,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         super.onCreate(savedInstanceState);
     }
 
+
     @Override
     public void onCreateView(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.fragment_main);
@@ -70,8 +72,10 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         /*
          * INFO
          */
-        txt_title = findViewById(R.id.txt_title);
+        txt_title    = findViewById(R.id.txt_title);
         txt_subtitle = findViewById(R.id.txt_subtitle);
+        txt_section_count = findViewById(R.id.txt_section_count);
+        img_album         = findViewById(R.id.img_album);
 
         /*
          * LIST
@@ -79,66 +83,82 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
          */
         btn_add = findViewById(R.id.btn_add);
         btn_add.setOnClickListener(this);
-
-        rcvw_track = findViewById(R.id.rcvw_track);
+        lyt_nosection = findViewById(R.id.lyt_nosection);
+        rcvw_track    = findViewById(R.id.rcvw_track);
         rcvw_track.setAdapter(mAdapterTrack = new Adapter());
         rcvw_track_layout_manager = (LinearLayoutManager) rcvw_track.getLayoutManager();
+
+        RecyclerView.AdapterDataObserver observer = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                try {
+                    if (mAdapterTrack.DATA.isEmpty()) {
+                        lyt_nosection.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        lyt_nosection.setVisibility(View.INVISIBLE);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "AdapterDataObserver", e);
+                }
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                onChanged();
+            }
+
+        };
+
+        mAdapterTrack.registerAdapterDataObserver(observer);
+
+        btn_play_pause = findViewById(R.id.btn_play_pause);
+        btn_play_pause.setOnClickListener(this);
+        btn_next_track     = findViewById(R.id.btn_next_track);
+        btn_next_track.setOnClickListener(this);
+        btn_previous_track = findViewById(R.id.btn_previous_track);
+        btn_previous_track.setOnClickListener(this);
 
         /*
          * SEEKER
          *
          */
-
-        btn_play_pause = findViewById(R.id.btn_play_pause);
-        btn_play_pause.setOnClickListener(this);
-
+        track_selected = findViewById(R.id.track_selected);
         seek_total = findViewById(R.id.seek_total);
-        seek_line = findViewById(R.id.seek_line);
         seek_start = findViewById(R.id.seek_start);
         seek_end   = findViewById(R.id.seek_end);
-        track_selected = findViewById(R.id.track_selected);
+        seek_bar   = findViewById(R.id.seek_bar);
+        seek_bar.setListener(new SeekBar.Listener() {
 
-        seek_pos_sc = findViewById(R.id.seek_pos_sc);
-        seek_pos_ec = findViewById(R.id.seek_pos_ec);
-
-        seek_pos_sc.setOnTouchListener(new SeekTouchListener(){
             @Override
-            public int min() {
-                return 0;
+            public void onChangedSc(int value) {
+                try {
+                    seek_start.setText(Util.toDisplay(value));
+                    seek_bar.setValue(value);
+                    mPlayer .seekTo(value);
+                    clearSelection();
+                } catch (Exception e) {
+                    Log.e(TAG, "", e);
+                }
             }
 
             @Override
-            public int max() {
-                return max_seek_margin - 20;
-            }
-
-            @Override
-            public void changed(int margin_position) {
-                min_seek_margin = margin_position;
-
-                int sc = min_seek_margin == 0 ? 0 : mPlayer.getDuration() * min_seek_margin / seek_total.getWidth();
-                seek_start.setText(Util.toDisplay(min_seek = sc));
-                mPlayer.seekTo(min_seek);
-            }
-        });
-        seek_pos_ec.setOnTouchListener(new SeekTouchListener(){
-            @Override
-            public int min() {
-                return min_seek_margin + 20;
-            }
-
-            @Override
-            public int max() {
-                return seek_total.getWidth();
-            }
-
-            @Override
-            public void changed(int margin_position) {
-                max_seek_margin = margin_position;
-
-                int ec = max_seek_margin == 0 ? 0 : mPlayer.getDuration() * max_seek_margin / seek_total.getWidth();
-                seek_end  .setText(Util.toDisplay(max_seek = ec));
-
+            public void onChangedEc(int value) {
+                try {
+                    seek_end  .setText(Util.toDisplay(value));
+                    if (value < mPlayer.getCurrentPosition()) {
+                        mPlayer.seekTo(seek_bar.getSc());
+                    }
+                    clearSelection();
+                } catch (Exception e) {
+                    Log.e(TAG, "", e);
+                }
             }
         });
 
@@ -182,6 +202,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 if (btn_play_pause.isActivated()) {
                     mPlayer.pause();
                     mSeekRunnable = null;
+
                 }
                 else {
                     mPlayer.start();
@@ -189,6 +210,17 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 }
 
                 btn_play_pause.setActivated(!btn_play_pause.isActivated());
+
+                if (mSelectedTrack != null) {
+                    mAdapterTrack.notifyItemChanged(mAdapterTrack.DATA.indexOf(mSelectedTrack));
+                }
+
+            }
+            else if (view == btn_next_track) {
+                nextTrack();
+            }
+            else if (view == btn_previous_track) {
+                prevTrack();
             }
         } catch (Exception e) {
             Log.e("", "", e);
@@ -224,34 +256,28 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         });
     }
 
-    private int mFileId = -1;
+    private FileHolder mFileHolder;
     private void openLast() {
         new Thread() {
             @Override
             public void run() {
                 try {
-                    Cursor cr = DB.query("select path, _id from FILE order by last_update desc limit 1");
-                    if (cr.moveToFirst()) {
-                        prepare(new File(cr.getString(0)));
-                        mFileId = cr.getInt(1);
+                    Cursor cr = DB.query("select _id from FILE order by last_update desc limit 1");
+                    if (!cr.moveToFirst()) {
+                        cr.close();
+                        Log.w(TAG, "No Last Item");
+                        return;
                     }
-                    cr.close();
+                    int _id = cr.getInt(0);
 
-                    mAdapterTrack.DATA.clear();
-                    cr = DB.query("select _id, title, sc_time, ec_time from FILE_TRACK order by sq_no desc");
-                    while (cr.moveToNext()) {
-                        mAdapterTrack.DATA.add(new Object[]{cr.getInt(0), cr.getString(1), cr.getInt(2), cr.getInt(3)});
+                    mFileHolder = FileHolder.find(getActivity(), _id);
+                    if (mFileHolder == null) {
+                        Log.w(TAG, "Cant Find Item " + _id);
+                        return;
                     }
-                    if (rcvw_track.getHandler() != null) {
-                        rcvw_track.getHandler().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAdapterTrack.notifyDataSetChanged();
-                            }
-                        });
-                    }
+                    prepare();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "openLast", e);
                 }
             }
         }.start();
@@ -259,24 +285,38 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
 
     private Adapter mAdapterTrack;
-    private MediaMetadataRetriever mInfo;
+    private MediaMetadataRetriever mAudioInfo;
     private MediaPlayer mPlayer;
     private ImageButton btn_add;
+    private ImageButton btn_next_track;
+    private ImageButton btn_previous_track;
+    private ImageView img_album;
     private TextView txt_title;
     private TextView txt_subtitle;
+    private TextView txt_section_count;
 
     private ImageButton btn_play_pause;
     private RecyclerView rcvw_track;
+    private View lyt_nosection;
     private LinearLayoutManager rcvw_track_layout_manager;
-    private int mSelectedTrack = -1;
+    private Object[] mSelectedTrack = null;
 
-    private void prepare(File file) throws Exception {
+    private void prepare() throws Exception {
+        if (mFileHolder == null) {
+            return;
+        }
+
+        File file = new File(mFileHolder.path);
+        if (!file.isFile() || !file.exists()) {
+            return;
+        }
+
         if (mPlayer != null && mPlayer.isPlaying()) {
             mPlayer.stop();
         }
 
-        mInfo= new MediaMetadataRetriever();
-        mInfo.setDataSource(file.getAbsolutePath());
+        mAudioInfo = new MediaMetadataRetriever();
+        mAudioInfo.setDataSource(file.getAbsolutePath());
 
         mPlayer = new MediaPlayer();
         mPlayer.setOnPreparedListener(FragmentMain.this);
@@ -285,20 +325,57 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         mPlayer.prepare();
     }
 
+    @Override
+    public void onPrepared(MediaPlayer mediaPlayer) {
+        seek_bar .setMaxValue(mPlayer.getDuration());
+        String title  = mAudioInfo.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        String artist = mAudioInfo.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        txt_title   .setText(title == null ? "" : title);
+        txt_subtitle.setText(artist == null ? "" : artist);
+        track_selected.setText("");
 
-    private View seek_pos_sc;
-    private View seek_pos_ec;
+        Glide.with(img_album).load(mFileHolder.album_art).into(img_album);
+
+        seekTo(0, mPlayer.getDuration());
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    mSelectedTrack = null;
+                    mAdapterTrack.DATA.clear();
+
+                    Cursor cr = DB.query("select _id, title, sc_time, ec_time from FILE_TRACK where file_id=" + mFileHolder._id + " order by sq_no desc");
+                    while (cr.moveToNext()) {
+                        mAdapterTrack.DATA.add(new Object[]{cr.getInt(0), cr.getString(1), cr.getInt(2), cr.getInt(3)});
+                    }
+                    cr.close();
+                    if (rcvw_track.getHandler() != null) {
+                        rcvw_track.getHandler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapterTrack    .notifyDataSetChanged();
+                                txt_section_count.setText(mAdapterTrack.DATA.size() + " Sections");
+                                lyt_nosection    .setVisibility(mAdapterTrack.DATA.isEmpty() ? View.VISIBLE : View.INVISIBLE);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "", e);
+                }
+            }
+        }.start();
+    }
+
+
     private TextView seek_start;
     private TextView seek_end;
     private View seek_total;
-    private View seek_line;
+    private SeekBar  seek_bar;
+
     private Runnable mSeekRunnable;
     private TextView track_selected;
 
-    private int min_seek = 0;
-    private int max_seek = 0;
-    private int min_seek_margin = 0;
-    private int max_seek_margin = 0;
     private void initializeSeek() {
         if (mSeekRunnable != null) {
             return;
@@ -310,25 +387,26 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                  * SEEK, TIMER, DLL
                  */
                 try {
-                    //8dp is size of circle seek
-                    ViewGroup.LayoutParams params = seek_line.getLayoutParams();
-                    params.width = (max_seek_margin - dip(8) - min_seek_margin) * (mPlayer.getCurrentPosition() - min_seek) / (max_seek - min_seek);
-                    seek_line.setLayoutParams(params);
+                    int delay = 500;
 
+                    seek_bar  .setValue(mPlayer.getCurrentPosition() + delay);
                     seek_start.setText(Util.toDisplay(mPlayer.getCurrentPosition()));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
 
-                if (max_seek <= mPlayer.getCurrentPosition()) {
-                    mPlayer.seekTo(min_seek);//REPEAT
-                }
-
-                if (mSeekRunnable != null) {
-                    Handler handler = seek_total.getHandler();
-                    if (handler != null) {
-                        handler.postDelayed(mSeekRunnable, 1000);
+                    if (mPlayer.getCurrentPosition() >= seek_bar.getEc()) {
+                        mPlayer.seekTo(seek_bar.getSc());//REPEAT
+                        if (btn_play_pause.isActivated() && !mPlayer.isPlaying()) {
+                            mPlayer.start();
+                        }
                     }
+
+                    if (mSeekRunnable != null) {
+                        Handler handler = seek_total.getHandler();
+                        if (handler != null) {
+                            handler.postDelayed(mSeekRunnable, delay);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "mSeekRunnable", e);
                 }
             }
         };
@@ -338,68 +416,14 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         }
     }
 
-    private void seekSelect(int sc, int ec) {
-        min_seek = sc;
-        max_seek = ec;
-
+    private void seekTo(int sc, int ec) {
         seek_start.setText(Util.toDisplay(sc));
         seek_end  .setText(Util.toDisplay(ec));
 
-        ViewGroup.LayoutParams params = seek_line.getLayoutParams();
-        params.width = 0;
-        seek_line.setLayoutParams(params);
-
-        int p_sc, p_ec;
-
-        RelativeLayout.LayoutParams
-                sc_params = (RelativeLayout.LayoutParams) seek_pos_sc.getLayoutParams();
-        sc_params.setMargins(p_sc = seek_total.getWidth() * sc / mPlayer.getDuration(), 0, 0, 0);
-        seek_pos_sc.setLayoutParams(sc_params);
-
-        RelativeLayout.LayoutParams
-                ec_params = (RelativeLayout.LayoutParams) seek_pos_ec.getLayoutParams();
-        ec_params.setMargins(p_ec = seek_total.getWidth() * ec / mPlayer.getDuration(), 0, 0, 0);
-        seek_pos_ec.setLayoutParams(ec_params);
-
-        min_seek_margin = p_sc;
-        max_seek_margin = p_ec;
-
+        seek_bar.setSc(sc);
+        seek_bar.setEc(ec);
+        seek_bar.setValue(sc);
         mPlayer.seekTo(sc);
-    }
-
-
-    private void delTrack() {
-//        mAdapterTrack.isChecking = true;
-//        notifyVisible();
-//        lnly_menu_confirm.setVisibility(View.VISIBLE);
-//        btn_menu_ok.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                try {
-//                    int size = mAdapterTrack.ITEM_CHECK.size();
-//                    for (int i = 0; i < size; i++) {
-//                        int id = mAdapterTrack.ITEM_CHECK.keyAt(i);
-//                        if (id >= 0 && mAdapterTrack.ITEM_CHECK.get(id, false)) {
-//                            Object[] data = mAdapterTrack.getItem(id);
-//                            DB.delete("FILE_TRACK", "_id=" + data[0]);
-//                            int idx = mAdapterTrack.indexOf(id);
-//                            mAdapterTrack.DATA.remove(idx);
-//                            mAdapterTrack.notifyItemRemoved(idx);
-//                        }
-//                    }
-//
-//                    closeMenuTrack();
-//                } catch (Exception e) {
-//                    Log.e("", "", e);
-//                }
-//            }
-//        });
-    }
-
-    private void notifyVisible() {
-        if (!mAdapterTrack.DATA.isEmpty()) {
-            mAdapterTrack.notifyItemRangeChanged(0, mAdapterTrack.DATA.size());
-        }
     }
 
     private void addTrack() {
@@ -414,6 +438,9 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
         edtx_title.setText(mAdapterTrack.getNewTitle());
 
+        edtx_start.setText(Util.toDisplay(seek_bar.getSc()));
+        edtx_end  .setText(Util.toDisplay(seek_bar.getEc()));
+
         chbx_seek.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -421,8 +448,8 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                     if (isChecked) {
                         edtx_start.setEnabled(false);
                         edtx_end  .setEnabled(false);
-                        edtx_start.setText(Util.toDisplay(min_seek));
-                        edtx_end  .setText(Util.toDisplay(max_seek));
+                        edtx_start.setText(Util.toDisplay(seek_bar.getSc()));
+                        edtx_end  .setText(Util.toDisplay(seek_bar.getEc()));
                     }
                     else {
                         edtx_start.setEnabled(true);
@@ -493,7 +520,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             protected Object[] doInBackground(String... strings) {
                 try {
                     int sq_no = 1;
-                    Cursor cursor = DB.query("select sq_no from FILE_TRACK where file_id=" + mFileId + " order by sq_no desc limit 1");
+                    Cursor cursor = DB.query("select sq_no from FILE_TRACK where file_id=" + mFileHolder._id + " order by sq_no desc limit 1");
                     if (cursor.moveToFirst()) {
                         sq_no = cursor.getInt(0) + 1;
                     }
@@ -501,7 +528,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                     int sc, ec;
 
                     ContentValues cvalues = new ContentValues();
-                    cvalues.put("file_id", mFileId);
+                    cvalues.put("file_id", mFileHolder._id);
                     cvalues.put("title", p_title);
                     cvalues.put("sq_no", sq_no);
                     cvalues.put("sc_time", sc = Util.fromDisplay(p_start));
@@ -520,6 +547,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 try {
                     mAdapterTrack.DATA.add(r);
                     mAdapterTrack.notifyItemInserted(mAdapterTrack.DATA.size() - 1);
+                    txt_section_count.setText(mAdapterTrack.DATA.size() + " Sections");
                 } catch (Exception e) {
                     Log.e("", "", e);
                 }
@@ -536,35 +564,91 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 @Override
                 public void run() {
                     try {
+                        int    _id  = data.getIntExtra("_id", 0);
                         String path = data.getStringExtra("path");
 
-                        ContentValues cvalues = new ContentValues();
-                        cvalues.put("path", path);
-                        cvalues.put("last_update", System.currentTimeMillis());
-
-                        DB.insert("FILE", cvalues);
-
-                        File file = new File(path);
-                        if (!file.exists()) {
-                            System.out.println("FILE NOT FOUND!!!");
+                        mFileHolder = FileHolder.find(getActivity(), _id);
+                        if (mFileHolder == null) {
                             return;
                         }
 
-                        prepare(file);
+                        ContentValues cvalues = new ContentValues();
+                        cvalues.put("_id",         _id);
+                        cvalues.put("path",        path);
+                        cvalues.put("last_update", System.currentTimeMillis());
+                        DB.insert("FILE",  cvalues);
+
+                        prepare();
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.e(TAG, "", e);
                     }
                 }
             }.start();
         }
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
-        seekSelect(0, mPlayer.getDuration());
-        txt_title.setText(mInfo.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) + " " + mInfo.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
+    private void selectTrack(Object[] data) {
+        if (mSelectedTrack == data) {
+            return;
+        }
+
+        Object[]
+        last_selected  = mSelectedTrack;
+        mSelectedTrack = data;
+
+        if (last_selected != null) {
+            mAdapterTrack.notifyItemChanged(mAdapterTrack.DATA.indexOf(last_selected));
+        }
+
+        mAdapterTrack.notifyItemChanged(mAdapterTrack.DATA.indexOf(mSelectedTrack));
+
+        track_selected.setText((String) data[1]);
+        seekTo((int) data[2], (int) data[3]);
     }
+
+    private void nextTrack() {
+        if (mAdapterTrack.DATA.isEmpty()) {
+            return;
+        }
+
+        if (mSelectedTrack == null) {
+            selectTrack(mAdapterTrack.DATA.get(0));
+            return;
+        }
+
+        int idx = mAdapterTrack.DATA.indexOf(mSelectedTrack) + 1;
+        if (idx < mAdapterTrack.DATA.size()) {
+            selectTrack(mAdapterTrack.DATA.get(idx));
+        }
+    }
+
+    private void prevTrack() {
+        if (mAdapterTrack.DATA.isEmpty()) {
+            return;
+        }
+
+        if (mSelectedTrack == null) {
+            selectTrack(mAdapterTrack.DATA.get(0));
+            return;
+        }
+
+        int idx = mAdapterTrack.DATA.indexOf(mSelectedTrack) - 1;
+        if (idx >= 0) {
+            selectTrack(mAdapterTrack.DATA.get(idx));
+        }
+    }
+
+    private void clearSelection() {
+        if (mSelectedTrack == null) {
+            return;
+        }
+        Object[] track = mSelectedTrack;
+        mSelectedTrack = null;
+        mAdapterTrack.notifyItemChanged(mAdapterTrack.DATA.indexOf(track));
+        track_selected.setText("");
+    }
+
 
     private class Holder extends RecyclerView.ViewHolder {
 
@@ -572,6 +656,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         public TextView time;
         public RelativeLayout rvly_layout;
         public ImageButton btn_menu;
+        public Indicator play_indicator;
 
         public Holder(@NonNull View itemView) {
             super(itemView);
@@ -596,6 +681,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 holder.time   = view.findViewById(R.id.time);
                 holder.rvly_layout = view.findViewById(R.id.rvly_layout);
                 holder.btn_menu = view.findViewById(R.id.btn_menu);
+                holder.play_indicator = view.findViewById(R.id.play_indicator);
             } catch (Exception e) {
                 Log.e("", "", e);
             }
@@ -607,32 +693,28 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             try {
                 final Object[] data = DATA.get(index);
 
-                final int _id = (int) data[0];
                 holder.title.setText((String) data[1]);
                 holder.time .setText(Util.toDisplay((int) data[2]) + " - " + Util.toDisplay((int) data[3]) );
 
-                holder.rvly_layout.setActivated(false);
+                if (mSelectedTrack == data) {
+                    holder.rvly_layout.setActivated(true);
+                    if (mPlayer.isPlaying()) {
+                        holder.play_indicator.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        holder.play_indicator.setVisibility(View.INVISIBLE);
+                    }
+                }
+                else {
+                    holder.rvly_layout.setActivated(false);
+                    holder.play_indicator.setVisibility(View.INVISIBLE);
+                }
+
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         try {
-                            if (mSelectedTrack == (int) data[0]) {
-                                return;
-                            }
-
-                            if (mPlayer.isPlaying()) {
-                                btn_play_pause.callOnClick();
-                            }
-
-                            int last_selected = mSelectedTrack;
-                            mSelectedTrack    = (int) data[0];
-
-                            holder.rvly_layout.setActivated(true);
-
-                            if (last_selected != -1) mAdapterTrack.notifyItemChanged(indexOf(last_selected));
-
-                            track_selected.setText((String) data[1]);
-                            seekSelect((int) data[2], (int) data[3]);
+                            selectTrack(data);
                         } catch (Exception e) {
                             Log.e("", "", e);
                         }
@@ -642,7 +724,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 holder.btn_menu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        openMenu(view, index);
+                        openMenu(view, data);
                     }
                 });
             } catch (Exception e) {
@@ -685,45 +767,64 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             return title + " " + id;
         }
 
-        private void openMenu(final View anchor, final int index) {
-            List<HashMap<String, Object>> data = new ArrayList<HashMap<String, Object>>();
+        private void openMenu(final View anchor, final Object[] row) {
+            final List<HashMap<String, Object>> data = new ArrayList<HashMap<String, Object>>();
             HashMap<String, Object>
-            menu = new HashMap<String, Object>();
-            menu.put("title", "Rename");
-            data.add(menu);
+//            menu = new HashMap<String, Object>();
+//            menu.put("title", "Rename");
+//            data.add(menu);
             menu = new HashMap<String, Object>();
             menu.put("title", "Delete");
             data.add(menu);
 
-            ListPopupWindow popupWindow = new ListPopupWindow(getContext());
+            final ListPopupWindow popupWindow = new ListPopupWindow(getContext());
 
             ListAdapter adapter = new SimpleAdapter(
                     getContext(),
                     data,
-                    android.R.layout.activity_list_item, // You may want to use your own cool layout
+                    R.layout.adapter_popup_menu, // You may want to use your own cool layout
                     new String[] {"title"}, // These are just the keys that the data uses
                     new int[] {android.R.id.text1}); // The view ids to map the data to
 
             popupWindow.setAnchorView(anchor);
             popupWindow.setAdapter(adapter);
-            popupWindow.setWidth(400); // note: don't use pixels, use a dimen resource
+            popupWindow.setWidth(dip(120));
             popupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     try {
                         if (i == 0) {
-
-                        }
-                        else if (i == 1) {
-                            DATA.remove(index);
-                            notifyItemRemoved(index);
+                            new SweetAlertDialog(getActivity(), SweetAlertDialog.WARNING_TYPE)
+                                    .setTitleText(row[1] + "")
+                                    .setContentText("Won't be able to recover this section!")
+                                    .setConfirmText("Yes,delete it!")
+                                    .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                        @Override
+                                        public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                            try {
+                                                DB.delete("FILE_TRACK", "_id=" + row[0]);
+                                                int idx = DATA.indexOf(row);
+                                                if (idx > -1) {
+                                                    DATA.remove(idx);
+                                                    notifyItemRemoved(idx);
+                                                    txt_section_count.setText(DATA.size() + " Sections");
+                                                }
+                                                sweetAlertDialog.dismissWithAnimation();
+                                            } catch (Exception e) {
+                                                Log.e(TAG, "", e);
+                                            }
+                                        }
+                                    })
+                                    .show();
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "", e);
                     }
+                    popupWindow.dismiss();
                 }
             }); // the callback for when a list item is selected
             popupWindow.show();
+
         }
 
     }
@@ -734,65 +835,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         toast.show();
     }
 
-    private class SeekTouchListener implements View.OnTouchListener {
 
-        int prevX, prevY;
-
-        public boolean onTouch(View view, MotionEvent event) {
-            final RelativeLayout.LayoutParams par = (RelativeLayout.LayoutParams) view.getLayoutParams();
-            switch(event.getAction()) {
-                case MotionEvent.ACTION_MOVE:
-                {
-                    int margin = par.leftMargin + (int) event.getRawX()-prevX;
-                    if (margin < min()) {
-                        margin = min();
-                    }
-                    else if (margin > max()) {
-                        margin = max();
-                    }
-                    par.leftMargin = margin;
-                    prevX = (int) event.getRawX();
-                    view.setLayoutParams(par);
-                    changed(par.leftMargin);
-                    return true;
-                }
-                case MotionEvent.ACTION_UP:
-                {
-                    view.setPressed(false);
-                    return true;
-                }
-                case MotionEvent.ACTION_DOWN:
-                {
-                    view.setPressed(true);
-                    prevX=(int)event.getRawX();
-                    prevY=(int)event.getRawY();
-
-                    Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-                    // Vibrate for 500 milliseconds
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        v.vibrate(VibrationEffect.createOneShot(100,VibrationEffect.DEFAULT_AMPLITUDE));
-                    }else{
-                        //deprecated in API 26
-                        v.vibrate(100);
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public int min() {
-            return 0;
-        }
-
-        public int max() {
-            return 0;
-        }
-
-        public void changed(int margin_position) {
-
-        }
-    }
 
     int dip(int pValue) {
         Resources r = getResources();

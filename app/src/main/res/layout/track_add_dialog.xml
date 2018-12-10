@@ -42,7 +42,7 @@
                     android:id="@+id/chbx_selection"
                     android:layout_width="wrap_content"
                     android:layout_height="42dp"
-                    android:text="Current selection"
+                    android:text="CURRENT SELECTION"
                     android:layout_centerVertical="true"
                     android:layout_marginTop="16dp"
                     android:layout_marginLeft="8dp"
@@ -66,21 +66,18 @@
                     android:layout_height="wrap_content"
                     android:focusedByDefault="false"
                     android:hint="New Section..."
-                    android:paddingBottom="8dp"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    android:paddingTop="8dp"
+                    android:padding="12dp"
                     android:background="@drawable/selector_edit_text_enabled"
                     android:textColor="@color/text_light"
                     android:textColorHint="@color/text_secondary"
-                    android:textSize="24sp"
+                    android:textSize="18sp"
                     android:maxLength="20"
                     android:layout_margin="12dp"/>
 
                 <EditText
                     android:id="@+id/edtx_start"
-                    android:layout_width="100dp"
-                    android:layout_height="52dp"
+                    android:layout_width="120dp"
+                    android:layout_height="48dp"
                     android:layout_below="@id/edtx_title"
                     android:layout_marginTop="30dp"
                     android:layout_alignParentLeft="true"
@@ -97,8 +94,8 @@
 
                 <EditText
                     android:id="@+id/edtx_end"
-                    android:layout_width="100dp"
-                    android:layout_height="52dp"
+                    android:layout_width="120dp"
+                    android:layout_height="48dp"
                     android:layout_below="@id/edtx_title"
                     android:layout_marginTop="30dp"
                     android:layout_alignParentRight="true"
@@ -119,9 +116,9 @@
                     android:layout_alignLeft="@+id/edtx_start"
                     android:layout_alignRight="@id/edtx_start"
                     android:layout_below="@+id/edtx_title"
-                    android:text="Start"
+                    android:text="START"
                     android:gravity="center"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_primary"
                     />
 
@@ -131,9 +128,9 @@
                     android:layout_alignLeft="@+id/edtx_end"
                     android:layout_alignRight="@id/edtx_end"
                     android:layout_below="@+id/edtx_title"
-                    android:text="End"
+                    android:text="END"
                     android:gravity="center"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_primary"
                     />
 
@@ -147,7 +144,7 @@
                 android:layout_marginBottom="16dp"
                 android:layout_height="52dp"
                 android:text="SAVE"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textAlignment="center"
                 android:padding="0dp"
                 android:textColor="#FFFFFFFF"

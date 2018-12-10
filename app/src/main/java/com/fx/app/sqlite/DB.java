@@ -32,8 +32,8 @@ public class DB extends SQLiteOpenHelper implements DatabaseErrorHandler {
                 "file_id INTEGER NOT NULL," +
                 "title TEXT NOT NULL," +
                 "sq_no INTEGER NOT NULL," +
-                "sc_time TEXT NOT NULL," +
-                "ec_time TEXT NOT NULL" +
+                "sc_time INTEGER NOT NULL," +
+                "ec_time INTEGER NOT NULL" +
                 ")");
     }
 
@@ -64,7 +64,7 @@ public class DB extends SQLiteOpenHelper implements DatabaseErrorHandler {
     }
 
     public static long insert(String p_table, ContentValues p_values) {
-        return db.getWritableDatabase().insert(p_table, null, p_values);
+        return db.getWritableDatabase().insertWithOnConflict(p_table, null, p_values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     public static long update(String p_table, ContentValues p_values, String p_where) {

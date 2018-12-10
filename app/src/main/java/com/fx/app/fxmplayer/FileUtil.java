@@ -30,7 +30,7 @@ public class FileUtil {
 
                 // LocalStorageProvider
                 if (isLocalStorageDocument(context, uri)) {
-                    // The path is the id
+                    // The path is the _id
                     return DocumentsContract.getDocumentId(uri);
                 }
                 // ExternalStorageProvider
