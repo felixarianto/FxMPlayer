@@ -40,7 +40,7 @@
                 android:layout_height="20dp"
                 android:gravity="center_vertical"
                 android:text="00:00 - 25:00"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_content_size"
                 android:textColor="@color/text_secondary"
                 android:enabled="false"
                 />
@@ -63,7 +63,7 @@
             android:layout_height="32dp"
             android:gravity="center_vertical"
             android:text="Reff 1"
-            android:textSize="12sp"
+            android:textSize="@dimen/text_content_size"
             android:textColor="@color/text_secondary"
             android:paddingRight="16dp"
             android:enabled="false"

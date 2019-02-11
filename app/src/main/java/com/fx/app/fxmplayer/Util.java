@@ -1,7 +1,10 @@
 package com.fx.app.fxmplayer;
 
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.EditText;
 
 public class Util {
 
@@ -42,6 +45,9 @@ public class Util {
                 minute = Integer.valueOf(time[0]) * 60000;
                 second = Integer.valueOf(time[1]) * 1000;
             }
+            else {
+                return -1;
+            }
             return hour + minute + second;
         } catch (Exception e) {
             Log.e("Util.fromDisplay", "", e);
@@ -56,6 +62,36 @@ public class Util {
         return "" + v;
     }
 
+    public static void addFilter(final EditText edtText) {
+        edtText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                lastLenght = charSequence.length();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            int lastLenght = 0;
+            @Override
+            public void afterTextChanged(Editable editable) {
+                try {
+                    String txt = edtText.getText().toString();
+                    if (lastLenght < txt.length()) {
+                        if (!txt.contains(":")) {
+                            if(txt.length() >= 2) {
+                                editable.append(":", 2, 3);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("", "", e);
+                }
+            }
+        });
+    }
 
 
 }

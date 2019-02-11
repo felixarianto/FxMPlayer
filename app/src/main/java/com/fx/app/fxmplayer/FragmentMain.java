@@ -12,6 +12,7 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -45,7 +46,11 @@ import com.bumptech.glide.Glide;
 import com.fx.app.sqlite.DB;
 import com.taishi.library.Indicator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +79,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
          */
         txt_title    = findViewById(R.id.txt_title);
         txt_subtitle = findViewById(R.id.txt_subtitle);
+        txt_durations= findViewById(R.id.txt_durations);
         txt_section_count = findViewById(R.id.txt_section_count);
         img_album         = findViewById(R.id.img_album);
 
@@ -266,6 +272,9 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                     if (!cr.moveToFirst()) {
                         cr.close();
                         Log.w(TAG, "No Last Item");
+                        mFileHolder = new FileHolder();
+                        mFileHolder.path = "raw";
+                        prepare();
                         return;
                     }
                     int _id = cr.getInt(0);
@@ -293,6 +302,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     private ImageView img_album;
     private TextView txt_title;
     private TextView txt_subtitle;
+    private TextView txt_durations;
     private TextView txt_section_count;
 
     private ImageButton btn_play_pause;
@@ -306,10 +316,38 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             return;
         }
 
-        File file = new File(mFileHolder.path);
-        if (!file.isFile() || !file.exists()) {
-            return;
+        File file = null;
+        if (mFileHolder.path.equals("raw")) {
+            InputStream iStream = getActivity().getResources().openRawResource(R.raw.al_fatihah_muzammil);
+            ByteArrayOutputStream byteStream = null;
+            try {
+                byte[] buffer = new byte[iStream.available()];
+                iStream.read(buffer);
+
+                byteStream = new ByteArrayOutputStream();
+                byteStream.write(buffer);
+                byteStream.close();
+                iStream.close();
+
+                file = new File("../Audio/Al-Fatihah.mp3");
+                file.createNewFile();
+                FileOutputStream output = new FileOutputStream(file);
+                output.write(buffer);
+                output.flush();
+                if (!file.isFile() || !file.exists()) {
+                    return;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "", e);
+            }
         }
+        else {
+            file = new File(mFileHolder.path);
+            if (!file.isFile() || !file.exists()) {
+                return;
+            }
+        }
+
 
         if (mPlayer != null && mPlayer.isPlaying()) {
             mPlayer.stop();
@@ -332,6 +370,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         String artist = mAudioInfo.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         txt_title   .setText(title == null ? "" : title);
         txt_subtitle.setText(artist == null ? "" : artist);
+        txt_durations.setText(Util.toDisplay(mPlayer.getDuration()));
         track_selected.setText("");
 
         Glide.with(img_album).load(mFileHolder.album_art).into(img_album);
@@ -426,34 +465,55 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         mPlayer.seekTo(sc);
     }
 
+
+
     private void addTrack() {
         final Dialog dialog = new Dialog(getActivity());
         View view = View.inflate(getActivity(), R.layout.track_add_dialog, null);
         final EditText edtx_title = view.findViewById(R.id.edtx_title);
-        final EditText edtx_start = view.findViewById(R.id.edtx_start);
-        final EditText edtx_end   = view.findViewById(R.id.edtx_end);
+        final EditText edtx_sc_0 = view.findViewById(R.id.edt_sc_0);
+        final EditText edtx_sc_1 = view.findViewById(R.id.edt_sc_1);
+        final EditText edtx_ec_0 = view.findViewById(R.id.edt_ec_0);
+        final EditText edtx_ec_1 = view.findViewById(R.id.edt_ec_1);
         Button   btn_save   = view.findViewById(R.id.btn_save);
         ImageButton   btn_cancel = view.findViewById(R.id.btn_cancel);
         CheckBox chbx_seek  = view.findViewById(R.id.chbx_selection);
 
         edtx_title.setText(mAdapterTrack.getNewTitle());
 
-        edtx_start.setText(Util.toDisplay(seek_bar.getSc()));
-        edtx_end  .setText(Util.toDisplay(seek_bar.getEc()));
+        String[] sc = Util.toDisplay(seek_bar.getSc()).split(":");
+        String[] ec = Util.toDisplay(seek_bar.getEc()).split(":");
+
+        edtx_sc_0.setText(sc[0]);
+        edtx_sc_1.setText(sc[1]);
+        edtx_ec_0.setText(ec[0]);
+        edtx_ec_1.setText(ec[1]);
 
         chbx_seek.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 try {
                     if (isChecked) {
-                        edtx_start.setEnabled(false);
-                        edtx_end  .setEnabled(false);
-                        edtx_start.setText(Util.toDisplay(seek_bar.getSc()));
-                        edtx_end  .setText(Util.toDisplay(seek_bar.getEc()));
+                        edtx_sc_0.setEnabled(false);
+                        edtx_sc_1.setEnabled(false);
+                        edtx_ec_0.setEnabled(false);
+                        edtx_ec_1.setEnabled(false);
+
+
+                        String[] sc = Util.toDisplay(seek_bar.getSc()).split(":");
+                        String[] ec = Util.toDisplay(seek_bar.getEc()).split(":");
+
+                        edtx_sc_0.setText(sc[0]);
+                        edtx_sc_1.setText(sc[1]);
+                        edtx_ec_0.setText(ec[0]);
+                        edtx_ec_1.setText(ec[1]);
+
                     }
                     else {
-                        edtx_start.setEnabled(true);
-                        edtx_end  .setEnabled(true);
+                        edtx_sc_0.setEnabled(true);
+                        edtx_sc_1.setEnabled(true);
+                        edtx_ec_0.setEnabled(true);
+                        edtx_ec_1.setEnabled(true);
                     }
                 } catch (Exception e) {
                     Log.e("", "", e);
@@ -483,25 +543,29 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                         return;
                     }
 
-                    if (Util.fromDisplay(edtx_start.getText().toString()) == -1) {
+                    String start = edtx_sc_0.getText().toString() + ":" + edtx_sc_1.getText().toString();
+                    String end   = edtx_ec_0.getText().toString() + ":" + edtx_ec_1.getText().toString();
+
+
+                    if (Util.fromDisplay(start) == -1) {
                         toast("Invalid of start time");
-                        edtx_start.requestFocus();
+                        edtx_sc_0.requestFocus();
                         return;
                     }
 
-                    if (Util.fromDisplay(edtx_end.getText().toString()) == -1) {
+                    if (Util.fromDisplay(end) == -1) {
                         toast("Invalid of end time");
-                        edtx_end.requestFocus();
+                        edtx_ec_0.requestFocus();
                         return;
                     }
 
-                    if (Util.fromDisplay(edtx_start.getText().toString()) == Util.fromDisplay(edtx_end.getText().toString())) {
+                    if (start.equals(end)) {
                         toast("No selection time");
-                        edtx_end.requestFocus();
+                        edtx_sc_0.requestFocus();
                         return;
                     }
 
-                    addTrack(edtx_title.getText().toString(), edtx_start.getText().toString(), edtx_end.getText().toString());
+                    addTrack(edtx_title.getText().toString(), start, end);
                     dialog.dismiss();
                 } catch (Exception e) {
                     Log.e("", "", e);
@@ -559,6 +623,10 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     private void onActivityResultAddFileFromLibrary(int requestCode, int resultCode, final Intent data) {
         if(resultCode == Activity.RESULT_OK) {
             Log.w(TAG, "onActivityResultAddFileFromLibrary");
+
+            if (mPlayer != null && mPlayer.isPlaying()) {
+                btn_play_pause.callOnClick();
+            }
 
             new Thread(){
                 @Override
@@ -777,6 +845,10 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             menu.put("title", "Delete");
             data.add(menu);
 
+            menu = new HashMap<String, Object>();
+            menu.put("title", "Rename");
+            data.add(menu);
+
             final ListPopupWindow popupWindow = new ListPopupWindow(getContext());
 
             ListAdapter adapter = new SimpleAdapter(
@@ -808,6 +880,39 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                                                     DATA.remove(idx);
                                                     notifyItemRemoved(idx);
                                                     txt_section_count.setText(DATA.size() + " Sections");
+
+                                                    if (mSelectedTrack == row) {
+                                                        mSelectedTrack = null;
+                                                        track_selected.setText("");
+                                                    }
+                                                }
+                                                sweetAlertDialog.dismissWithAnimation();
+                                            } catch (Exception e) {
+                                                Log.e(TAG, "", e);
+                                            }
+                                        }
+                                    })
+                                    .show();
+                        }
+                        else if (i == 1) {
+                            final EditText edtText = new EditText(getActivity());
+                            edtText.setPadding(dip(8), dip(8), dip(8), dip(8));
+                            edtText.setText(row[1] + "");
+                            edtText.setSelection(edtText.getText().toString().length());
+                            new SweetAlertDialog(getActivity(), SweetAlertDialog.BUTTON_CONFIRM)
+                                    .setCustomView(edtText)
+                                    .setTitleText("Change section name")
+                                    .setConfirmButton("Rename", new SweetAlertDialog.OnSweetClickListener() {
+                                        @Override
+                                        public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                            try {
+                                                row[1] = edtText.getText().toString();
+                                                ContentValues cvalues =  new ContentValues();
+                                                cvalues.put("title", row[1] + "");
+                                                DB.update("FILE_TRACK", cvalues, "_id=" + row[0]);
+                                                int idx = DATA.indexOf(row);
+                                                if (idx > -1) {
+                                                    notifyItemChanged(idx);
                                                 }
                                                 sweetAlertDialog.dismissWithAnimation();
                                             } catch (Exception e) {

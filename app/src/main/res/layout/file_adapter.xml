@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:text="A"
             android:textStyle="bold"
-            android:textSize="20sp"
+            android:textSize="@dimen/text_title_size"
             android:paddingBottom="12dp"
             android:paddingLeft="8dp"
             android:textColor="@color/text_secondary"/>
@@ -60,7 +60,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="10 Sections"
-                    android:textSize="8sp"
+                    android:textSize="@dimen/text_content_size"
                     android:textColor="@color/grey_50"
                     android:padding="6dp"/>
 
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:padding="2dp"
                 android:text="Al Qiyamah - Madin Ver"
-                android:textSize="10sp"
+                android:textSize="@dimen/text_content_size"
                 android:textStyle="bold"
                 android:textColor="@color/grey_50"
                 android:maxLines="2"
@@ -94,7 +94,7 @@
                 android:layout_height="wrap_content"
                 android:padding="2dp"
                 android:text="04:00"
-                android:textSize="8sp"
+                android:textSize="@dimen/text_content_size"
                 android:textColor="@color/grey_50"
                 android:layout_below="@id/txt_title"
                 android:layout_alignParentRight="true"/>
@@ -106,7 +106,7 @@
                 android:layout_toLeftOf="@id/txt_duration"
                 android:padding="2dp"
                 android:text="Al Ausyi"
-                android:textSize="8sp"
+                android:textSize="@dimen/text_content_size"
                 android:textColor="@color/grey_50"
                 android:layout_below="@id/txt_title"
                 android:ellipsize="marquee"/>

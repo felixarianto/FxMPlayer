@@ -67,7 +67,7 @@
             android:layout_height="wrap_content"
             android:maxLines="2"
             android:ellipsize="end"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_title_size"
             android:text="Surah Arrahman Qiro Verses"
             android:textColor="@color/text_primary"
             android:layout_toRightOf="@+id/card_thumb"
@@ -82,7 +82,7 @@
             android:layout_height="wrap_content"
             android:marqueeRepeatLimit="marquee_forever"
             android:ellipsize="marquee"
-            android:textSize="11sp"
+            android:textSize="@dimen/text_content_size"
             android:text="Abdurrahman Al Ausyi"
             android:textColor="@color/text_secondary"
             android:layout_toRightOf="@+id/card_thumb"
@@ -91,6 +91,18 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:fadingEdgeLength="10dp"/>
+
+        <TextView
+            android:id="@+id/txt_durations"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/card_thumb"
+            android:textColor="@color/text_secondary"
+            android:layout_below="@id/txt_subtitle"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:text="durations"
+            android:textSize="@dimen/text_content_size" />
 
 
         <ImageButton
@@ -145,6 +157,8 @@
             android:layout_toLeftOf="@+id/btn_play_pause_card"
             />
 
+
+
     </RelativeLayout>
 
     <RelativeLayout
@@ -158,7 +172,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/seek_bar"
-            android:textSize="11sp"
+            android:textSize="@dimen/text_content_size"
             android:textColor="@color/text_light"
             android:text="00:00"
             android:layout_marginLeft="15dp"/>
@@ -168,7 +182,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignRight="@+id/seek_bar"
-            android:textSize="11sp"
+            android:textSize="@dimen/text_content_size"
             android:textColor="@color/text_light"
             android:text="00:00"
             android:layout_marginRight="15dp"/>
@@ -193,7 +207,7 @@
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
-            android:textSize="11sp"
+            android:textSize="@dimen/text_content_size"
             android:textColor="@color/colorAccent"
             android:text=""
             android:scrollHorizontally="true"/>
@@ -205,23 +219,23 @@
             android:text="10 Sections"
             android:textColor="@color/text_light"
             android:layout_below="@id/seek_bar"
-            android:textSize="11sp"
+            android:textSize="@dimen/text_content_size"
             android:gravity="center_vertical"
             android:layout_marginLeft="15dp"/>
 
-        <ImageButton
-            android:id="@+id/btn_add"
-            android:layout_width="42dp"
-            android:layout_height="20dp"
-            android:padding="4dp"
-            android:layout_marginRight="4dp"
-            android:src="@drawable/ic_playlist_add_black_24dp"
-            android:tint="@color/colorAccent"
-            android:textAlignment="center"
-            android:textColor="@color/selector_button_text_color"
-            android:background="@android:color/transparent"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/seek_bar"/>
+        <!--<ImageButton-->
+            <!---->
+            <!--android:layout_width="42dp"-->
+            <!--android:layout_height="20dp"-->
+            <!--android:padding="4dp"-->
+            <!--android:layout_marginRight="4dp"-->
+            <!--android:src="@drawable/ic_playlist_add_black_24dp"-->
+            <!--android:tint="@color/colorAccent"-->
+            <!--android:textAlignment="center"-->
+            <!--android:textColor="@color/selector_button_text_color"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_below="@id/seek_bar"/>-->
 
     </RelativeLayout>
 
@@ -254,6 +268,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="No sections yet"
+                android:textSize="@dimen/text_content_size"
                 android:textColor="@color/text_secondary"/>
 
         </LinearLayout>
@@ -268,5 +283,18 @@
             />
 
     </RelativeLayout>
+
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btn_add"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="24dp"
+        android:padding="8dp"
+        android:tint="@color/colorAccent"
+        app:backgroundTint="@color/colorPrimaryDark"
+        android:src="@drawable/ic_playlist_add_black_24dp"/>
 
 </RelativeLayout>
