@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -318,9 +319,13 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
         File file = null;
         if (mFileHolder.path.equals("raw")) {
-            InputStream iStream = getActivity().getResources().openRawResource(R.raw.al_fatihah_muzammil);
-            ByteArrayOutputStream byteStream = null;
-            try {
+            File directory = new File(Environment.getExternalStorageDirectory(),"Audio");
+            if (!directory.exists()) {
+                directory.mkdir();
+            }
+            if (directory.listFiles().length == 0) {
+                InputStream iStream = getActivity().getResources().openRawResource(R.raw.al_fatihah_muzammil);
+                ByteArrayOutputStream byteStream = null;
                 byte[] buffer = new byte[iStream.available()];
                 iStream.read(buffer);
 
@@ -329,16 +334,20 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 byteStream.close();
                 iStream.close();
 
-                file = new File("../Audio/Al-Fatihah.mp3");
+                file = new File(Environment.getExternalStorageDirectory() + "Audio","Al-Fatihah.mp3");
                 file.createNewFile();
+
                 FileOutputStream output = new FileOutputStream(file);
                 output.write(buffer);
                 output.flush();
-                if (!file.isFile() || !file.exists()) {
-                    return;
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "", e);
+            }
+
+            if (directory.listFiles().length == 0) {
+                return;
+            }
+            file = directory.listFiles()[0];
+            if (!file.isFile() || !file.exists()) {
+                return;
             }
         }
         else {
@@ -375,7 +384,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
 
         Glide.with(img_album).load(mFileHolder.album_art).into(img_album);
 
-        seekTo(0, mPlayer.getDuration());
+
 
         new Thread() {
             @Override
@@ -396,9 +405,11 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                                 mAdapterTrack    .notifyDataSetChanged();
                                 txt_section_count.setText(mAdapterTrack.DATA.size() + " Sections");
                                 lyt_nosection    .setVisibility(mAdapterTrack.DATA.isEmpty() ? View.VISIBLE : View.INVISIBLE);
+                                seekTo(0, mPlayer.getDuration());
                             }
                         });
                     }
+
                 } catch (Exception e) {
                     Log.e(TAG, "", e);
                 }
@@ -459,6 +470,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         seek_start.setText(Util.toDisplay(sc));
         seek_end  .setText(Util.toDisplay(ec));
 
+        seek_bar.setMaxValue(ec);
         seek_bar.setSc(sc);
         seek_bar.setEc(ec);
         seek_bar.setValue(sc);
