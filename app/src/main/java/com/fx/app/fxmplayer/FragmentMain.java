@@ -36,6 +36,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListPopupWindow;
 import android.widget.RelativeLayout;
@@ -184,6 +185,13 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
          *
          */
         openLast();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                AdsUtil.showInterstitial(null, null);
+            }
+        }, 5000);
     }
 
     @Override
@@ -213,7 +221,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     public void onClick(View view) {
         try {
             if (view == btn_add) {
-                AdsUtil.showInterstitial(new Runnable() {
+                AdsUtil.showInterstitial(view.getHandler(), new Runnable() {
                     @Override
                     public void run() {
                         addTrack();
@@ -407,23 +415,36 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 try {
                     mSelectedTrack = null;
                     mAdapterTrack.DATA.clear();
+                    if (mFileHolder.path.equals("raw")) {
+                        mAdapterTrack.DATA.add(new Object[]{1, "Ta'wudz", 0, 6000});
+                        mAdapterTrack.DATA.add(new Object[]{2, "Ayat 1", 7000, 13000});
+                        mAdapterTrack.DATA.add(new Object[]{3, "Ayat 2", 13000, 20000});
+                        mAdapterTrack.DATA.add(new Object[]{4, "Ayat 3", 21000, 27000});
+                        mAdapterTrack.DATA.add(new Object[]{5, "Ayat 4-5", 28000, 36000});
+                        mAdapterTrack.DATA.add(new Object[]{6, "Ayat 6", 37000, 45000});
+                        mAdapterTrack.DATA.add(new Object[]{7, "Ayat 7", 46000, 63000});
+                    }
 
                     Cursor cr = DB.query("select _id, title, sc_time, ec_time from FILE_TRACK where file_id=" + mFileHolder._id + " order by sq_no");
                     while (cr.moveToNext()) {
                         mAdapterTrack.DATA.add(new Object[]{cr.getInt(0), cr.getString(1), cr.getInt(2), cr.getInt(3)});
                     }
+
+                    mAdapterTrack.DATA.add(new Object[0]);
+
                     cr.close();
                     if (rcvw_track.getHandler() != null) {
                         rcvw_track.getHandler().post(new Runnable() {
                             @Override
                             public void run() {
                                 mAdapterTrack    .notifyDataSetChanged();
-                                txt_section_count.setText(mAdapterTrack.DATA.size() + " Sections");
+                                txt_section_count.setText((mAdapterTrack.DATA.size() -1) + " Sections");
                                 lyt_nosection    .setVisibility(mAdapterTrack.DATA.isEmpty() ? View.VISIBLE : View.INVISIBLE);
                                 seekTo(0, mPlayer.getDuration());
                             }
                         });
                     }
+
 
                 } catch (Exception e) {
                     Log.e(TAG, "", e);
@@ -491,7 +512,6 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         seek_bar.setValue(sc);
         mPlayer.seekTo(sc);
     }
-
 
 
     private void addTrack() {
@@ -641,8 +661,9 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             @Override
             protected void onPostExecute(Object[] r) {
                 try {
-                    mAdapterTrack.DATA.add(r);
-                    mAdapterTrack.notifyItemInserted(mAdapterTrack.DATA.size() - 1);
+                    int idx = mAdapterTrack.DATA.size() - 1;
+                    mAdapterTrack.DATA.add(idx, r);
+                    mAdapterTrack.notifyItemInserted(idx);
                     txt_section_count.setText(mAdapterTrack.DATA.size() + " Sections");
                 } catch (Exception e) {
                     Log.e("", "", e);
@@ -771,9 +792,20 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         public ArrayList<Object[]> DATA = new ArrayList<>();
         //0:_id 1:title 2:sc 3:ec
 
+
+        @Override
+        public int getItemViewType(int position) {
+            return DATA.get(position).length == 0 ? 0 : 1;
+        }
+
         @NonNull
         @Override
         public Holder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            if (i == 0) {
+                LinearLayout view = new LinearLayout(getContext());
+                view.addView(new View(getContext()), new ViewGroup.LayoutParams(dip(150), dip(90)));
+                return new Holder(view);
+            }
             View view = viewGroup.inflate(viewGroup.getContext(), R.layout.track_adapter, null);
             Holder holder = new Holder(view);
             try {
@@ -792,7 +824,9 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         public void onBindViewHolder(@NonNull final Holder holder, final int index) {
             try {
                 final Object[] data = DATA.get(index);
-
+                if (data.length == 0) {
+                    return;
+                }
                 holder.title.setText((String) data[1]);
                 holder.time .setText(Util.toDisplay((int) data[2]) + " - " + Util.toDisplay((int) data[3]) );
 
@@ -857,6 +891,9 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
             do {
                 found = false;
                 for (Object[] obj : DATA) {
+                    if (obj.length == 0) {
+                        continue;
+                    }
                     if ((title + id).toLowerCase().replaceAll(" ", "").trim().equals(
                             String.valueOf(obj[1]).toLowerCase().replaceAll(" ", "").trim())) {
                         id++;
@@ -927,7 +964,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                                     .show();
                         }
                         else if (i == 1) {
-                            AdsUtil.showInterstitial(new Runnable() {
+                            AdsUtil.showInterstitial(anchor.getHandler(),new Runnable() {
                                 @Override
                                 public void run() {
                                     final EditText edtText = new EditText(getActivity());
