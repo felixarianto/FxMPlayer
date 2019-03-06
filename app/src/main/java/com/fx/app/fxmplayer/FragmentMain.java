@@ -70,6 +70,17 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         super.onCreate(savedInstanceState);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            if (mPlayer != null) {
+                mPlayer.stop();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+        }
+    }
 
     @Override
     public void onCreateView(@Nullable Bundle savedInstanceState) {
@@ -175,7 +186,6 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         openLast();
     }
 
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.main_menu, menu);
@@ -203,7 +213,12 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
     public void onClick(View view) {
         try {
             if (view == btn_add) {
-                addTrack();
+                AdsUtil.showInterstitial(new Runnable() {
+                    @Override
+                    public void run() {
+                        addTrack();
+                    }
+                });
             }
             else if (view == btn_play_pause) {
                 if (btn_play_pause.isActivated()) {
@@ -334,7 +349,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                 byteStream.close();
                 iStream.close();
 
-                file = new File(Environment.getExternalStorageDirectory() + "Audio","Al-Fatihah.mp3");
+                file = new File(directory,"Al-Fatihah.mp3");
                 file.createNewFile();
 
                 FileOutputStream output = new FileOutputStream(file);
@@ -393,7 +408,7 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                     mSelectedTrack = null;
                     mAdapterTrack.DATA.clear();
 
-                    Cursor cr = DB.query("select _id, title, sc_time, ec_time from FILE_TRACK where file_id=" + mFileHolder._id + " order by sq_no desc");
+                    Cursor cr = DB.query("select _id, title, sc_time, ec_time from FILE_TRACK where file_id=" + mFileHolder._id + " order by sq_no");
                     while (cr.moveToNext()) {
                         mAdapterTrack.DATA.add(new Object[]{cr.getInt(0), cr.getString(1), cr.getInt(2), cr.getInt(3)});
                     }
@@ -501,38 +516,43 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
         edtx_ec_0.setText(ec[0]);
         edtx_ec_1.setText(ec[1]);
 
-        chbx_seek.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                try {
-                    if (isChecked) {
-                        edtx_sc_0.setEnabled(false);
-                        edtx_sc_1.setEnabled(false);
-                        edtx_ec_0.setEnabled(false);
-                        edtx_ec_1.setEnabled(false);
+        edtx_sc_0.setEnabled(true);
+        edtx_sc_1.setEnabled(true);
+        edtx_ec_0.setEnabled(true);
+        edtx_ec_1.setEnabled(true);
 
-
-                        String[] sc = Util.toDisplay(seek_bar.getSc()).split(":");
-                        String[] ec = Util.toDisplay(seek_bar.getEc()).split(":");
-
-                        edtx_sc_0.setText(sc[0]);
-                        edtx_sc_1.setText(sc[1]);
-                        edtx_ec_0.setText(ec[0]);
-                        edtx_ec_1.setText(ec[1]);
-
-                    }
-                    else {
-                        edtx_sc_0.setEnabled(true);
-                        edtx_sc_1.setEnabled(true);
-                        edtx_ec_0.setEnabled(true);
-                        edtx_ec_1.setEnabled(true);
-                    }
-                } catch (Exception e) {
-                    Log.e("", "", e);
-                }
-            }
-        });
-        chbx_seek.setChecked(true);
+//        chbx_seek.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                try {
+//                    if (isChecked) {
+//                        edtx_sc_0.setEnabled(false);
+//                        edtx_sc_1.setEnabled(false);
+//                        edtx_ec_0.setEnabled(false);
+//                        edtx_ec_1.setEnabled(false);
+//
+//
+//                        String[] sc = Util.toDisplay(seek_bar.getSc()).split(":");
+//                        String[] ec = Util.toDisplay(seek_bar.getEc()).split(":");
+//
+//                        edtx_sc_0.setText(sc[0]);
+//                        edtx_sc_1.setText(sc[1]);
+//                        edtx_ec_0.setText(ec[0]);
+//                        edtx_ec_1.setText(ec[1]);
+//
+//                    }
+//                    else {
+//                        edtx_sc_0.setEnabled(true);
+//                        edtx_sc_1.setEnabled(true);
+//                        edtx_ec_0.setEnabled(true);
+//                        edtx_ec_1.setEnabled(true);
+//                    }
+//                } catch (Exception e) {
+//                    Log.e("", "", e);
+//                }
+//            }
+//        });
+//        chbx_seek.setChecked(true);
 
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -907,32 +927,37 @@ public class FragmentMain extends FragmentView implements View.OnClickListener ,
                                     .show();
                         }
                         else if (i == 1) {
-                            final EditText edtText = new EditText(getActivity());
-                            edtText.setPadding(dip(8), dip(8), dip(8), dip(8));
-                            edtText.setText(row[1] + "");
-                            edtText.setSelection(edtText.getText().toString().length());
-                            new SweetAlertDialog(getActivity(), SweetAlertDialog.BUTTON_CONFIRM)
-                                    .setCustomView(edtText)
-                                    .setTitleText("Change section name")
-                                    .setConfirmButton("Rename", new SweetAlertDialog.OnSweetClickListener() {
-                                        @Override
-                                        public void onClick(SweetAlertDialog sweetAlertDialog) {
-                                            try {
-                                                row[1] = edtText.getText().toString();
-                                                ContentValues cvalues =  new ContentValues();
-                                                cvalues.put("title", row[1] + "");
-                                                DB.update("FILE_TRACK", cvalues, "_id=" + row[0]);
-                                                int idx = DATA.indexOf(row);
-                                                if (idx > -1) {
-                                                    notifyItemChanged(idx);
+                            AdsUtil.showInterstitial(new Runnable() {
+                                @Override
+                                public void run() {
+                                    final EditText edtText = new EditText(getActivity());
+                                    edtText.setPadding(dip(8), dip(8), dip(8), dip(8));
+                                    edtText.setText(row[1] + "");
+                                    edtText.setSelection(edtText.getText().toString().length());
+                                    new SweetAlertDialog(getActivity(), SweetAlertDialog.BUTTON_CONFIRM)
+                                            .setCustomView(edtText)
+                                            .setTitleText("Change section name")
+                                            .setConfirmButton("Rename", new SweetAlertDialog.OnSweetClickListener() {
+                                                @Override
+                                                public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                                    try {
+                                                        row[1] = edtText.getText().toString();
+                                                        ContentValues cvalues =  new ContentValues();
+                                                        cvalues.put("title", row[1] + "");
+                                                        DB.update("FILE_TRACK", cvalues, "_id=" + row[0]);
+                                                        int idx = DATA.indexOf(row);
+                                                        if (idx > -1) {
+                                                            notifyItemChanged(idx);
+                                                        }
+                                                        sweetAlertDialog.dismissWithAnimation();
+                                                    } catch (Exception e) {
+                                                        Log.e(TAG, "", e);
+                                                    }
                                                 }
-                                                sweetAlertDialog.dismissWithAnimation();
-                                            } catch (Exception e) {
-                                                Log.e(TAG, "", e);
-                                            }
-                                        }
-                                    })
-                                    .show();
+                                            })
+                                            .show();
+                                }
+                            });
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "", e);

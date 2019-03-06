@@ -1,18 +1,19 @@
 package com.fx.app.fxmplayer;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
+
+import com.google.android.gms.ads.MobileAds;
 
 public class MainActivity extends AppCompatActivity {
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener;
     private ViewPager mPager;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
 
         initPager();
 
+        MobileAds.initialize(this, "ca-app-pub-3007919778406514~9449210262");
+        AdsUtil.initInterstitial(this, "ca-app-pub-3940256099942544/1033173712");
+
+
     }
 
     private void initPager() {
@@ -28,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         mPager.setAdapter(new FragmentAdapter(getSupportFragmentManager()));
     }
 
-
-
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
 }

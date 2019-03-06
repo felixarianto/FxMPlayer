@@ -46,6 +46,19 @@
                     android:layout_centerVertical="true"
                     android:layout_marginTop="16dp"
                     android:layout_marginLeft="8dp"
+                    android:textSize="@dimen/text_content_size"
+                    android:textColor="@color/selector_checkbox_color"
+                    android:buttonTint="@color/selector_checkbox_color"
+                    android:checked="true"
+                    android:visibility="invisible"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:text="Add New"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginLeft="12dp"
                     android:textSize="@dimen/text_title_size"
                     android:textColor="@color/selector_checkbox_color"
                     android:buttonTint="@color/selector_checkbox_color"

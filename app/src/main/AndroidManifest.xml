@@ -18,6 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3007919778406514~9449210262"/>
+
         <activity
             android:name=".SplashActivity"
             android:theme="@style/SplashTheme">
